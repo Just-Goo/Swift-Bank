@@ -6,5 +6,16 @@ import (
 )
 
 func RegisterRoutes(r *gin.Engine, h *handler.Handler) {
-	r.POST("/signup", h.H.SignUp)
+	v1 := r.Group("sb/api/v1")
+	{
+		// default route
+		v1.GET("", func(c *gin.Context) {
+			c.Writer.Write([]byte("Swift Bank"))
+		})
+	
+		v1.POST("/account", h.H.SignUp)
+		v1.GET("/account/:id", h.H.GetAccount)
+		v1.GET("/accounts", h.H.ListAccount)
+	}
+
 }

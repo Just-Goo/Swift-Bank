@@ -66,7 +66,7 @@ func (r *repositoryImpl) GetAccountForUpdate(ctx context.Context, id int64) (*mo
 	return &account, nil
 }
 
-func (r *repositoryImpl) ListAccounts(ctx context.Context, limit, offset int64) ([]models.Account, error) {
+func (r *repositoryImpl) ListAccounts(ctx context.Context, limit, offset int32) ([]models.Account, error) {
 	query := `SELECT id, owner, balance, currency, created_at FROM accounts ORDER BY id LIMIT @limit OFFSET @offset`
 	args := pgx.NamedArgs{
 		"limit":  limit,
@@ -80,7 +80,7 @@ func (r *repositoryImpl) ListAccounts(ctx context.Context, limit, offset int64) 
 
 	defer rows.Close()
 
-	var accounts []models.Account
+	accounts := []models.Account{}
 	for rows.Next() {
 		var account models.Account
 		if err := rows.Scan(&account.ID, &account.Owner, &account.Balance, &account.Currency, &account.CreatedAt); err != nil {

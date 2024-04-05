@@ -131,7 +131,7 @@ func TestListAccounts(t *testing.T) {
 
 	limit, offset := 5, 5
 
-	accounts, err := testRepo.R.ListAccounts(context.Background(), int64(limit), int64(offset))
+	accounts, err := testRepo.R.ListAccounts(context.Background(), int32(limit), int32(offset))
 	require.NoError(t, err)
 	require.Len(t, accounts, 5)
 

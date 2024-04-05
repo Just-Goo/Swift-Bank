@@ -7,6 +7,10 @@ import (
 
 type HandlerProvider interface {
 	SignUp(ctx *gin.Context)
+	GetAccount(ctx *gin.Context)
+	ListAccount(ctx *gin.Context)
+	GetGin() *gin.Engine
+	StartServer(address string) error
 }
 
 type Handler struct {

@@ -5,8 +5,11 @@ import (
 	"log"
 
 	"github.com/Just-Goo/Swift_Bank/config"
-	"github.com/Just-Goo/Swift_Bank/controller"
-	"github.com/Just-Goo/Swift_Bank/database" 
+	"github.com/Just-Goo/Swift_Bank/controller/handler"
+	"github.com/Just-Goo/Swift_Bank/controller/routes"
+	"github.com/Just-Goo/Swift_Bank/database"
+	"github.com/Just-Goo/Swift_Bank/repository"
+	"github.com/Just-Goo/Swift_Bank/service"
 )
 
 func main() {
@@ -31,5 +34,13 @@ func main() {
 
 	defer pool.Close()
 
-	controller.InitRouter(pool, config)
+	repository := repository.NewRepository(pool)
+	service := service.NewService(repository.R)
+	handler := handler.NewHandler(service.S)
+	routes.RegisterRoutes(handler.H.GetGin(), handler)
+
+	err = handler.H.StartServer(config.Port)
+	if err != nil {
+		log.Fatal("failed to start server:", err)
+	}
 }
