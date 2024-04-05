@@ -6,7 +6,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Just-Goo/Swift_Bank/config"
 	"github.com/Just-Goo/Swift_Bank/database" 
 )
 
@@ -16,13 +15,13 @@ func TestMain(m *testing.M) {
 	ctx := context.Background()
 
 	// create a new postgres instance
-	config, err := config.LoadConfig("..")
-	if err != nil {
-		log.Fatal("failed to load config: ", err)
-	}
-
+	// config, err := config.LoadConfig("..")
+	// if err != nil {
+	// 	log.Fatal("failed to load config: ", err)
+	// }
+	dsn := "postgresql://root:swiftsecret@localhost:5432/Swift_Bank_DB?sslmode=disable"
 	postgresClient := database.PostgresClient{}
-	db, err := postgresClient.NewPostgresClient(ctx, config.Dsn)
+	db, err := postgresClient.NewPostgresClient(ctx, dsn)
 	if err != nil {
 		log.Fatal("cannot connect to db: ", err)
 	}
