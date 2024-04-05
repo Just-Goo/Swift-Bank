@@ -51,6 +51,21 @@ func (r *repositoryImpl) GetAccount(ctx context.Context, id int64) (*models.Acco
 	return &account, nil
 }
 
+func (r *repositoryImpl) GetAccountForUpdate(ctx context.Context, id int64) (*models.Account, error) {
+	var account models.Account
+	query := `SELECT id, owner, balance, currency, created_at FROM accounts WHERE id = @id FOR NO KEY UPDATE`
+	args := pgx.NamedArgs{
+		"id": id,
+	}
+
+	err := r.pool.QueryRow(ctx, query, args).Scan(&account.ID, &account.Owner, &account.Balance, &account.Currency, &account.CreatedAt)
+	if err != nil {
+		return &account, err
+	}
+
+	return &account, nil
+}
+
 func (r *repositoryImpl) ListAccounts(ctx context.Context, limit, offset int64) ([]models.Account, error) {
 	query := `SELECT id, owner, balance, currency, created_at FROM accounts ORDER BY id LIMIT @limit OFFSET @offset`
 	args := pgx.NamedArgs{
@@ -82,10 +97,27 @@ func (r *repositoryImpl) ListAccounts(ctx context.Context, limit, offset int64) 
 }
 
 func (r *repositoryImpl) UpdateAccount(ctx context.Context, id int64, balance float64) (*models.Account, error) {
-	query := "UPDATE accounts SET balance = @balance WHERE id = @id RETURNING id, owner, balance, currency, created_at"
+	query := "UPDATE accounts SET balance = @amount WHERE id = @id RETURNING id, owner, balance, currency, created_at"
 	args := pgx.NamedArgs{
-		"id":      id,
-		"balance": balance,
+		"id":     id,
+		"amount": balance,
+	}
+
+	var account models.Account
+
+	err := r.pool.QueryRow(ctx, query, args).Scan(&account.ID, &account.Owner, &account.Balance, &account.Currency, &account.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return &account, nil
+}
+
+func (r *repositoryImpl) AddAccountBalance(ctx context.Context, id int64, balance float64) (*models.Account, error) {
+	query := "UPDATE accounts SET balance = balance + @amount WHERE id = @id RETURNING id, owner, balance, currency, created_at"
+	args := pgx.NamedArgs{
+		"id":     id,
+		"amount": balance,
 	}
 
 	var account models.Account
@@ -252,7 +284,7 @@ func (r *repositoryImpl) execTx(ctx context.Context, fn func(pgx.Tx) error) erro
 
 	err = fn(tx)
 	if err != nil {
-		if rbErr := tx.Rollback(ctx); err != nil {
+		if rbErr := tx.Rollback(ctx); rbErr != nil {
 			return fmt.Errorf("tx err: %v, rb err: %v", err, rbErr)
 		}
 		return err
@@ -308,7 +340,29 @@ func (r *repositoryImpl) TransferTx(ctx context.Context, arg *models.TransferTxP
 			return err
 		}
 
-		// TODO: update balance
+		// update the sender's new balance
+		query5 := "UPDATE accounts SET balance = balance + @amount WHERE id = @id RETURNING id, owner, balance, currency, created_at"
+		args5 := pgx.NamedArgs{
+			"id":     arg.FromAccountID,
+			"amount": -arg.Amount,
+		}
+
+		err = r.pool.QueryRow(ctx, query5, args5).Scan(&result.FromAccount.ID, &result.FromAccount.Owner, &result.FromAccount.Balance, &result.FromAccount.Currency, &result.FromAccount.CreatedAt)
+		if err != nil {
+			return err
+		}
+
+		// update the receiver's new balance
+		query7 := "UPDATE accounts SET balance = balance + @amount WHERE id = @id RETURNING id, owner, balance, currency, created_at"
+		args7 := pgx.NamedArgs{
+			"id":     arg.ToAccountID,
+			"amount": arg.Amount,
+		}
+
+		err = r.pool.QueryRow(ctx, query7, args7).Scan(&result.ToAccount.ID, &result.ToAccount.Owner, &result.ToAccount.Balance, &result.ToAccount.Currency, &result.ToAccount.CreatedAt)
+		if err != nil {
+			return err
+		}
 
 		return err
 	})

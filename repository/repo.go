@@ -10,8 +10,10 @@ import (
 type RepositoryProvider interface {
 	CreateAccount(ctx context.Context, account *models.Account) (models.Account, error)
 	GetAccount(ctx context.Context, id int64) (*models.Account, error)
+	GetAccountForUpdate(ctx context.Context, id int64) (*models.Account, error)
 	ListAccounts(ctx context.Context, limit, offset int64) ([]models.Account, error)
 	UpdateAccount(ctx context.Context, id int64, balance float64) (*models.Account, error)
+	AddAccountBalance(ctx context.Context, id int64, balance float64) (*models.Account, error)
 	DeleteAccount(ctx context.Context, id int64) error
 	CreateEntry(ctx context.Context, entry *models.Entry) (models.Entry, error)
 	GetEntry(ctx context.Context, id int64) (*models.Entry, error)
