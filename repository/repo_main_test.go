@@ -16,7 +16,7 @@ func TestMain(m *testing.M) {
 	ctx := context.Background()
 
 	// create a new postgres instance
-	config, err := config.LoadConfig("../../Swift Bank")
+	config, err := config.LoadConfig("..")
 	if err != nil {
 		log.Fatal("failed to load config: ", err)
 	}
