@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"context"
+	"context" 
 	"testing"
 	"time"
 
@@ -28,7 +28,7 @@ func createRandomAccount(t *testing.T) *models.Account {
 	require.NotZero(t, account.ID)
 	require.NotZero(t, account.CreatedAt)
 
-	return account
+	return &account
 }
 
 func createRandomEntry(t *testing.T, account *models.Account) *models.Entry {
@@ -47,7 +47,7 @@ func createRandomEntry(t *testing.T, account *models.Account) *models.Entry {
 	require.NotZero(t, entry.ID)
 	require.NotZero(t, entry.CreatedAt)
 
-	return entry
+	return &entry
 }
 
 func createRandomTransaction(t *testing.T, account1, account2 *models.Account) *models.Transaction {
@@ -74,7 +74,7 @@ func createRandomTransaction(t *testing.T, account1, account2 *models.Account) *
 	require.NotZero(t, transaction.ID)
 	require.NotZero(t, transaction.CreatedAt)
 
-	return transaction
+	return &transaction
 }
 
 func TestCreateAccount(t *testing.T) {
@@ -175,13 +175,13 @@ func TestListEntries(t *testing.T) {
 	}
 }
 
-func TestCreateTransaction(t *testing.T)  {
+func TestCreateTransaction(t *testing.T) {
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
 	createRandomTransaction(t, account1, account2)
 }
 
-func TestGetTransaction(t *testing.T)  {
+func TestGetTransaction(t *testing.T) {
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
 	transaction1 := createRandomTransaction(t, account1, account2)
@@ -193,14 +193,14 @@ func TestGetTransaction(t *testing.T)  {
 	require.Equal(t, transaction1, transaction2)
 }
 
-func TestListTransactions(t *testing.T)  {
+func TestListTransactions(t *testing.T) {
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
 
 	for i := 0; i < 10; i++ {
-		createRandomTransaction(t, account1, account2)	
-		createRandomTransaction(t, account1, account2)	
-	} 
+		createRandomTransaction(t, account1, account2)
+		createRandomTransaction(t, account1, account2)
+	}
 
 	limit, offset := 10, 5
 	transactions, err := testRepo.R.ListTransactions(context.Background(), account1.ID, account2.ID, int64(limit), int64(offset))
@@ -212,5 +212,82 @@ func TestListTransactions(t *testing.T)  {
 		require.NotEmpty(t, transaction)
 		require.Equal(t, transaction.FromAccountID, account1.ID)
 		require.Equal(t, transaction.ToAccountID, account2.ID)
+	}
+}
+
+func TestTransferTx(t *testing.T) {
+	account1 := createRandomAccount(t)
+	account2 := createRandomAccount(t)
+
+	// run 'n' concurrent transfer transactions
+	n := 5
+	amount := float64(10)
+
+	errs := make(chan error)
+	results := make(chan models.TransferTxResult)
+
+	for i := 0; i < n; i++ {
+		go func() {
+			result, err := testRepo.R.TransferTx(context.Background(), &models.TransferTxParams{
+				FromAccountID: account1.ID,
+				ToAccountID:   account2.ID,
+				Amount:        amount,
+				Currency:      helpers.RandomCurrency(),
+				Description:   helpers.RandomString(20),
+				Fee:           float64(helpers.RandomFee()),
+			})
+
+			errs <- err
+			results <- result
+		}()
+	}
+
+	// check results
+	for i := 0; i < n; i++ {
+		err := <-errs
+		require.NoError(t, err)
+
+		result := <-results
+		require.NotEmpty(t, result)
+
+		// check transfer
+		transaction := result.Transaction
+		require.NotEmpty(t, transaction)
+		require.Equal(t, account1.ID, transaction.FromAccountID)
+		require.Equal(t, account2.ID, transaction.ToAccountID)
+		require.Equal(t, amount, transaction.Amount)
+		require.NotZero(t, transaction.ID)
+		require.NotZero(t, transaction.CreatedAt)
+
+		// check if the transaction was created in the database
+		_, err = testRepo.R.GetTransaction(context.Background(), transaction.ID)
+		require.NoError(t, err)
+
+		// check the entries
+		// sender entry
+		fromEntry := result.FromEntry
+		require.NotEmpty(t, fromEntry)
+		require.Equal(t, account1.ID, fromEntry.AccountID)
+		require.Equal(t, -amount, fromEntry.Amount)
+		require.NotZero(t, fromEntry.ID)
+		require.NotZero(t, fromEntry.CreatedAt)
+
+		// get sender entry from database
+		_, err = testRepo.R.GetEntry(context.Background(), fromEntry.ID)
+		require.NoError(t, err)
+
+		// receiver entry
+		toEntry := result.ToEntry
+		require.NotEmpty(t, toEntry)
+		require.Equal(t, account2.ID, toEntry.AccountID)
+		require.Equal(t, amount, toEntry.Amount)
+		require.NotZero(t, toEntry.ID)
+		require.NotZero(t, toEntry.CreatedAt)
+
+		// get receiver entry from database
+		_, err = testRepo.R.GetEntry(context.Background(), toEntry.ID)
+		require.NoError(t, err)
+
+		// TODO: check account balance
 	}
 }

@@ -27,3 +27,20 @@ type Transaction struct {
 	Fee           float64   `json:"fee"`    // must be positive
 	CreatedAt     time.Time `json:"created_at"`
 }
+
+type TransferTxParams struct {
+	FromAccountID int64   `json:"from_account_id"`
+	ToAccountID   int64   `json:"to_account_id"`
+	Amount        float64   `json:"amount"`
+	Currency      string  `json:"currency"`
+	Description   string  `json:"description"`
+	Fee           float64 `json:"fee"`
+}
+
+type TransferTxResult struct {
+	Transaction Transaction `json:"transaction"`
+	ToAccount   Account     `json:"to_account"`
+	FromAccount Account     `json:"from_account"`
+	ToEntry     Entry       `json:"to_entry"`
+	FromEntry   Entry       `json:"from_entry"`
+}

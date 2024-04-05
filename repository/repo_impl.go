@@ -1,7 +1,8 @@
-package postgres
+package repository
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Just-Goo/Swift_Bank/models"
 	"github.com/jackc/pgx/v5"
@@ -18,7 +19,7 @@ func NewRepositoryImpl(p *pgxpool.Pool) *repositoryImpl {
 	}
 }
 
-func (r *repositoryImpl) CreateAccount(ctx context.Context, account *models.Account) (*models.Account, error) {
+func (r *repositoryImpl) CreateAccount(ctx context.Context, account *models.Account) (models.Account, error) {
 	var a models.Account
 	query := `INSERT INTO accounts (owner, balance, currency) VALUES (@owner, @balance, @currency) RETURNING id, owner, balance, currency, created_at`
 	args := pgx.NamedArgs{
@@ -29,10 +30,10 @@ func (r *repositoryImpl) CreateAccount(ctx context.Context, account *models.Acco
 
 	err := r.pool.QueryRow(ctx, query, args).Scan(&a.ID, &a.Owner, &a.Balance, &a.Currency, &a.CreatedAt)
 	if err != nil {
-		return &a, err
+		return a, err
 	}
 
-	return &a, nil
+	return a, nil
 }
 
 func (r *repositoryImpl) GetAccount(ctx context.Context, id int64) (*models.Account, error) {
@@ -111,7 +112,7 @@ func (r *repositoryImpl) DeleteAccount(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (r *repositoryImpl) CreateEntry(ctx context.Context, entry *models.Entry) (*models.Entry, error) {
+func (r *repositoryImpl) CreateEntry(ctx context.Context, entry *models.Entry) (models.Entry, error) {
 	query := `INSERT INTO entries (account_id, amount) VALUES (@accountID, @amount) RETURNING id, account_id, amount, created_at`
 	args := pgx.NamedArgs{
 		"accountID": entry.AccountID,
@@ -121,10 +122,10 @@ func (r *repositoryImpl) CreateEntry(ctx context.Context, entry *models.Entry) (
 	var e models.Entry
 	err := r.pool.QueryRow(ctx, query, args).Scan(&e.ID, &e.AccountID, &e.Amount, &e.CreatedAt)
 	if err != nil {
-		return &e, err
+		return e, err
 	}
 
-	return &e, nil
+	return e, nil
 }
 
 func (r *repositoryImpl) GetEntry(ctx context.Context, id int64) (*models.Entry, error) {
@@ -173,7 +174,7 @@ func (r *repositoryImpl) ListEntries(ctx context.Context, accountID, limit, offs
 	return entries, nil
 }
 
-func (r *repositoryImpl) CreateTransaction(ctx context.Context, transaction *models.Transaction) (*models.Transaction, error) {
+func (r *repositoryImpl) CreateTransaction(ctx context.Context, transaction *models.Transaction) (models.Transaction, error) {
 	query := `INSERT INTO transactions (amount, fee, currency, description, to_account_id, from_account_id) VALUES 
 	(@amount, @fee, @currency, @description, @toAccountID, @fromAccountID) RETURNING  id, from_account_id, to_account_id,
 	 amount, fee, currency, description, created_at`
@@ -189,10 +190,10 @@ func (r *repositoryImpl) CreateTransaction(ctx context.Context, transaction *mod
 	var t models.Transaction
 	err := r.pool.QueryRow(ctx, query, args).Scan(&t.ID, &t.FromAccountID, &t.ToAccountID, &t.Amount, &t.Fee, &t.Currency, &t.Description, &t.CreatedAt)
 	if err != nil {
-		return &t, err
+		return t, err
 	}
 
-	return &t, nil
+	return t, nil
 }
 
 func (r *repositoryImpl) GetTransaction(ctx context.Context, id int64) (*models.Transaction, error) {
@@ -241,4 +242,76 @@ func (r *repositoryImpl) ListTransactions(ctx context.Context, fromAccountID, to
 	}
 
 	return transactions, nil
+}
+
+func (r *repositoryImpl) execTx(ctx context.Context, fn func(pgx.Tx) error) error {
+	tx, err := r.pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+
+	err = fn(tx)
+	if err != nil {
+		if rbErr := tx.Rollback(ctx); err != nil {
+			return fmt.Errorf("tx err: %v, rb err: %v", err, rbErr)
+		}
+		return err
+	}
+
+	return tx.Commit(ctx)
+}
+
+func (r *repositoryImpl) TransferTx(ctx context.Context, arg *models.TransferTxParams) (models.TransferTxResult, error) {
+	var result models.TransferTxResult
+
+	err := r.execTx(ctx, func(tx pgx.Tx) error {
+		var err error
+		// create transaction
+		query := `INSERT INTO transactions (amount, fee, currency, description, to_account_id, from_account_id) VALUES 
+					(@amount, @fee, @currency, @description, @toAccountID, @fromAccountID) RETURNING  id, from_account_id, to_account_id,
+					 amount, fee, currency, description, created_at`
+		args := pgx.NamedArgs{
+			"amount":        arg.Amount,
+			"fee":           arg.Fee,
+			"currency":      arg.Currency,
+			"description":   arg.Description,
+			"fromAccountID": arg.FromAccountID,
+			"toAccountID":   arg.ToAccountID,
+		}
+
+		err = tx.QueryRow(ctx, query, args).Scan(&result.Transaction.ID, &result.Transaction.FromAccountID, &result.Transaction.ToAccountID, &result.Transaction.Amount, &result.Transaction.Fee, &result.Transaction.Currency, &result.Transaction.Description, &result.Transaction.CreatedAt)
+		if err != nil {
+			return err
+		}
+
+		// create entry for sender account
+		query2 := `INSERT INTO entries (account_id, amount) VALUES (@accountID, @amount) RETURNING id, account_id, amount, created_at`
+		args2 := pgx.NamedArgs{
+			"accountID": arg.FromAccountID,
+			"amount":    -arg.Amount,
+		}
+
+		err = tx.QueryRow(ctx, query2, args2).Scan(&result.FromEntry.ID, &result.FromEntry.AccountID, &result.FromEntry.Amount, &result.FromEntry.CreatedAt)
+		if err != nil {
+			return err
+		}
+
+		// create entry for receiver account
+		query3 := `INSERT INTO entries (account_id, amount) VALUES (@accountID, @amount) RETURNING id, account_id, amount, created_at`
+		args3 := pgx.NamedArgs{
+			"accountID": arg.ToAccountID,
+			"amount":    arg.Amount,
+		}
+
+		err = tx.QueryRow(ctx, query3, args3).Scan(&result.ToEntry.ID, &result.ToEntry.AccountID, &result.ToEntry.Amount, &result.ToEntry.CreatedAt)
+		if err != nil {
+			return err
+		}
+
+		// TODO: update balance
+
+		return err
+	})
+
+	return result, err
 }
