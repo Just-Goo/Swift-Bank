@@ -340,32 +340,51 @@ func (r *repositoryImpl) TransferTx(ctx context.Context, arg *models.TransferTxP
 			return err
 		}
 
-		// update the sender's new balance
-		query5 := "UPDATE accounts SET balance = balance + @amount WHERE id = @id RETURNING id, owner, balance, currency, created_at"
-		args5 := pgx.NamedArgs{
-			"id":     arg.FromAccountID,
-			"amount": -arg.Amount,
-		}
-
-		err = r.pool.QueryRow(ctx, query5, args5).Scan(&result.FromAccount.ID, &result.FromAccount.Owner, &result.FromAccount.Balance, &result.FromAccount.Currency, &result.FromAccount.CreatedAt)
-		if err != nil {
-			return err
-		}
-
-		// update the receiver's new balance
-		query7 := "UPDATE accounts SET balance = balance + @amount WHERE id = @id RETURNING id, owner, balance, currency, created_at"
-		args7 := pgx.NamedArgs{
-			"id":     arg.ToAccountID,
-			"amount": arg.Amount,
-		}
-
-		err = r.pool.QueryRow(ctx, query7, args7).Scan(&result.ToAccount.ID, &result.ToAccount.Owner, &result.ToAccount.Balance, &result.ToAccount.Currency, &result.ToAccount.CreatedAt)
-		if err != nil {
-			return err
+		if arg.FromAccountID < arg.ToAccountID {
+			// update the sender's new balance first and then receiver's balance to avoid deadlock
+			result.FromAccount, result.ToAccount, err = addMoney(ctx, tx, arg.FromAccountID, -arg.Amount, arg.ToAccountID, arg.Amount)
+		} else {
+			// update the receiver's new balance first and then sender's balance to avoid deadlock
+			result.ToAccount, result.FromAccount, err = addMoney(ctx, tx, arg.ToAccountID, arg.Amount, arg.FromAccountID, -arg.Amount)
 		}
 
 		return err
 	})
 
 	return result, err
+}
+
+func addMoney(
+	ctx context.Context,
+	tx pgx.Tx,
+	accountID1 int64,
+	amount1 float64,
+	accountID2 int64,
+	amount2 float64,
+) (account1 models.Account, account2 models.Account, err error) {
+	// update account 1
+	query := "UPDATE accounts SET balance = balance + @amount WHERE id = @id RETURNING id, owner, balance, currency, created_at"
+	args := pgx.NamedArgs{
+		"id":     accountID1,
+		"amount": amount1,
+	}
+
+	err = tx.QueryRow(ctx, query, args).Scan(&account1.ID, &account1.Owner, &account1.Balance, &account1.Currency, &account1.CreatedAt)
+	if err != nil {
+		return account1, account2, err
+	}
+
+	// update account 2
+	query2 := "UPDATE accounts SET balance = balance + @amount WHERE id = @id RETURNING id, owner, balance, currency, created_at"
+	args2 := pgx.NamedArgs{
+		"id":     accountID2,
+		"amount": amount2,
+	}
+
+	err = tx.QueryRow(ctx, query2, args2).Scan(&account2.ID, &account2.Owner, &account2.Balance, &account2.Currency, &account2.CreatedAt)
+	if err != nil {
+		return account1, account2, err
+	}
+
+	return account1, account2, err
 }
