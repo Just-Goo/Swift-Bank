@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomAccount(t *testing.T) *models.Account {
+func createRandomAccount(t *testing.T) models.Account {
 	arg := models.Account{
 		Owner:    helpers.RandomOwner(),
 		Balance:  float64(helpers.RandomMoney()),
@@ -29,10 +29,10 @@ func createRandomAccount(t *testing.T) *models.Account {
 	require.NotZero(t, account.ID)
 	require.NotZero(t, account.CreatedAt)
 
-	return &account
+	return account
 }
 
-func createRandomEntry(t *testing.T, account *models.Account) *models.Entry {
+func createRandomEntry(t *testing.T, account *models.Account) models.Entry {
 	arg := models.Entry{
 		AccountID: account.ID,
 		Amount:    float64(helpers.RandomMoney()),
@@ -48,10 +48,10 @@ func createRandomEntry(t *testing.T, account *models.Account) *models.Entry {
 	require.NotZero(t, entry.ID)
 	require.NotZero(t, entry.CreatedAt)
 
-	return &entry
+	return entry
 }
 
-func createRandomTransaction(t *testing.T, account1, account2 *models.Account) *models.Transaction {
+func createRandomTransaction(t *testing.T, account1, account2 *models.Account) models.Transaction {
 	arg := models.Transaction{
 		FromAccountID: account1.ID,
 		ToAccountID:   account2.ID,
@@ -75,7 +75,7 @@ func createRandomTransaction(t *testing.T, account1, account2 *models.Account) *
 	require.NotZero(t, transaction.ID)
 	require.NotZero(t, transaction.CreatedAt)
 
-	return &transaction
+	return transaction
 }
 
 func TestCreateAccount(t *testing.T) {
@@ -142,12 +142,12 @@ func TestListAccounts(t *testing.T) {
 
 func TestCreateEntry(t *testing.T) {
 	account1 := createRandomAccount(t)
-	createRandomEntry(t, account1)
+	createRandomEntry(t, &account1)
 }
 
 func TestGetEntry(t *testing.T) {
 	account1 := createRandomAccount(t)
-	entry1 := createRandomEntry(t, account1)
+	entry1 := createRandomEntry(t, &account1)
 
 	entry2, err := testRepo.R.GetEntry(context.Background(), entry1.ID)
 	require.NoError(t, err)
@@ -159,7 +159,7 @@ func TestGetEntry(t *testing.T) {
 func TestListEntries(t *testing.T) {
 	account := createRandomAccount(t)
 	for i := 0; i < 10; i++ {
-		createRandomEntry(t, account)
+		createRandomEntry(t, &account)
 	}
 
 	limit, offset := 7, 3
@@ -179,13 +179,13 @@ func TestListEntries(t *testing.T) {
 func TestCreateTransaction(t *testing.T) {
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
-	createRandomTransaction(t, account1, account2)
+	createRandomTransaction(t, &account1, &account2)
 }
 
 func TestGetTransaction(t *testing.T) {
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
-	transaction1 := createRandomTransaction(t, account1, account2)
+	transaction1 := createRandomTransaction(t, &account1, &account2)
 
 	transaction2, err := testRepo.R.GetTransaction(context.Background(), transaction1.ID)
 	require.NoError(t, err)
@@ -199,8 +199,8 @@ func TestListTransactions(t *testing.T) {
 	account2 := createRandomAccount(t)
 
 	for i := 0; i < 10; i++ {
-		createRandomTransaction(t, account1, account2)
-		createRandomTransaction(t, account1, account2)
+		createRandomTransaction(t, &account1, &account2)
+		createRandomTransaction(t, &account1, &account2)
 	}
 
 	limit, offset := 10, 5
