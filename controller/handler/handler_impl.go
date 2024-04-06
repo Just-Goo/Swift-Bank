@@ -1,6 +1,6 @@
 package handler
 
-import (
+import ( 
 	"net/http"
 
 	"github.com/Just-Goo/Swift_Bank/models"
@@ -78,7 +78,7 @@ func (h *handlerImpl) GetAccount(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, account)
 }
 
-func (h *handlerImpl) ListAccount(ctx *gin.Context) {
+func (h *handlerImpl) ListAccounts(ctx *gin.Context) {
 	var req models.ListAccountRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
@@ -92,6 +92,52 @@ func (h *handlerImpl) ListAccount(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, accounts)
+}
+
+func (h *handlerImpl) UpdateAccount(ctx *gin.Context) {
+	var req models.GetAccountRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
+		return
+	}
+	
+	var update models.UpdateAccountRequest
+	if err := ctx.ShouldBindJSON(&update); err != nil {
+		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
+		return
+	}
+
+	account, err := h.service.UpdateAccount(ctx, req.ID, update.Balance)
+	if err != nil {
+		if err.Error() == "no rows in result set" {
+			ctx.JSON(http.StatusNotFound, h.errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, account)
+}
+
+func (h *handlerImpl) DeleteAccount(ctx *gin.Context) {
+	var req models.GetAccountRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
+		return
+	}
+
+	err := h.service.DeleteAccount(ctx, req.ID)
+	if err != nil {
+		if err.Error() == "no rows in result set" {
+			ctx.JSON(http.StatusNotFound, h.errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
+		return
+	}
+
+	ctx.String(http.StatusOK, "account deleted")
 }
 
 func (h *handlerImpl) errorResponse(err error) gin.H {

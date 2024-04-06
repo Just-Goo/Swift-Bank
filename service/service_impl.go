@@ -37,12 +37,11 @@ func (s *serviceImpl) GetAccountForUpdate(ctx context.Context, id int64) (*model
 }
 
 func (s *serviceImpl) ListAccounts(ctx context.Context, limit, offset int32) ([]models.Account, error) {
-	return s.repo.ListAccounts(ctx, limit, offset) 
+	return s.repo.ListAccounts(ctx, limit, offset)
 }
 
 func (s *serviceImpl) UpdateAccount(ctx context.Context, id int64, balance float64) (*models.Account, error) {
-
-	return nil, nil
+	return s.repo.AddAccountBalance(ctx, id, balance)
 }
 
 func (s *serviceImpl) AddAccountBalance(ctx context.Context, id int64, balance float64) (*models.Account, error) {
@@ -51,8 +50,12 @@ func (s *serviceImpl) AddAccountBalance(ctx context.Context, id int64, balance f
 }
 
 func (s *serviceImpl) DeleteAccount(ctx context.Context, id int64) error {
-
-	return nil
+	_, err := s.repo.GetAccount(ctx, id)
+	if err != nil {
+		return err
+	}
+	
+	return s.repo.DeleteAccount(ctx, id)
 }
 
 func (s *serviceImpl) CreateEntry(ctx context.Context, entry *models.Entry) (models.Entry, error) {

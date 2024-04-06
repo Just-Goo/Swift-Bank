@@ -15,7 +15,9 @@ func RegisterRoutes(r *gin.Engine, h *handler.Handler) {
 	
 		v1.POST("/account", h.H.SignUp)
 		v1.GET("/account/:id", h.H.GetAccount)
-		v1.GET("/accounts", h.H.ListAccount)
+		v1.GET("/accounts", h.H.ListAccounts)
+		v1.PUT("/account/:id", h.H.UpdateAccount)
+		v1.DELETE("/account/:id", h.H.DeleteAccount)
 	}
 
 }

@@ -113,11 +113,11 @@ func (r *repositoryImpl) UpdateAccount(ctx context.Context, id int64, balance fl
 	return &account, nil
 }
 
-func (r *repositoryImpl) AddAccountBalance(ctx context.Context, id int64, balance float64) (*models.Account, error) {
+func (r *repositoryImpl) AddAccountBalance(ctx context.Context, id int64, amount float64) (*models.Account, error) {
 	query := "UPDATE accounts SET balance = balance + @amount WHERE id = @id RETURNING id, owner, balance, currency, created_at"
 	args := pgx.NamedArgs{
 		"id":     id,
-		"amount": balance,
+		"amount": amount,
 	}
 
 	var account models.Account

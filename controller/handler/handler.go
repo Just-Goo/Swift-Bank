@@ -8,7 +8,9 @@ import (
 type HandlerProvider interface {
 	SignUp(ctx *gin.Context)
 	GetAccount(ctx *gin.Context)
-	ListAccount(ctx *gin.Context)
+	ListAccounts(ctx *gin.Context)
+	UpdateAccount(ctx *gin.Context)
+	DeleteAccount(ctx *gin.Context)
 	GetGin() *gin.Engine
 	StartServer(address string) error
 }
