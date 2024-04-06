@@ -13,7 +13,7 @@ type repositoryImpl struct {
 	pool *pgxpool.Pool
 }
 
-func NewRepositoryImpl(p *pgxpool.Pool) *repositoryImpl {
+func newRepositoryImpl(p *pgxpool.Pool) *repositoryImpl {
 	return &repositoryImpl{
 		pool: p,
 	}
@@ -36,7 +36,7 @@ func (r *repositoryImpl) CreateAccount(ctx context.Context, account *models.Acco
 	return a, nil
 }
 
-func (r *repositoryImpl) GetAccount(ctx context.Context, id int64) (*models.Account, error) {
+func (r *repositoryImpl) GetAccount(ctx context.Context, id int64) (models.Account, error) {
 	var account models.Account
 	query := `SELECT id, owner, balance, currency, created_at FROM accounts WHERE id = @id`
 	args := pgx.NamedArgs{
@@ -45,13 +45,13 @@ func (r *repositoryImpl) GetAccount(ctx context.Context, id int64) (*models.Acco
 
 	err := r.pool.QueryRow(ctx, query, args).Scan(&account.ID, &account.Owner, &account.Balance, &account.Currency, &account.CreatedAt)
 	if err != nil {
-		return &account, err
+		return account, err
 	}
 
-	return &account, nil
+	return account, nil
 }
 
-func (r *repositoryImpl) GetAccountForUpdate(ctx context.Context, id int64) (*models.Account, error) {
+func (r *repositoryImpl) GetAccountForUpdate(ctx context.Context, id int64) (models.Account, error) {
 	var account models.Account
 	query := `SELECT id, owner, balance, currency, created_at FROM accounts WHERE id = @id FOR NO KEY UPDATE`
 	args := pgx.NamedArgs{
@@ -60,10 +60,10 @@ func (r *repositoryImpl) GetAccountForUpdate(ctx context.Context, id int64) (*mo
 
 	err := r.pool.QueryRow(ctx, query, args).Scan(&account.ID, &account.Owner, &account.Balance, &account.Currency, &account.CreatedAt)
 	if err != nil {
-		return &account, err
+		return account, err
 	}
 
-	return &account, nil
+	return account, nil
 }
 
 func (r *repositoryImpl) ListAccounts(ctx context.Context, limit, offset int32) ([]models.Account, error) {
@@ -96,7 +96,7 @@ func (r *repositoryImpl) ListAccounts(ctx context.Context, limit, offset int32) 
 	return accounts, nil
 }
 
-func (r *repositoryImpl) UpdateAccount(ctx context.Context, id int64, balance float64) (*models.Account, error) {
+func (r *repositoryImpl) UpdateAccount(ctx context.Context, id int64, balance float64) (models.Account, error) {
 	query := "UPDATE accounts SET balance = @amount WHERE id = @id RETURNING id, owner, balance, currency, created_at"
 	args := pgx.NamedArgs{
 		"id":     id,
@@ -107,13 +107,13 @@ func (r *repositoryImpl) UpdateAccount(ctx context.Context, id int64, balance fl
 
 	err := r.pool.QueryRow(ctx, query, args).Scan(&account.ID, &account.Owner, &account.Balance, &account.Currency, &account.CreatedAt)
 	if err != nil {
-		return nil, err
+		return account, err
 	}
 
-	return &account, nil
+	return account, nil
 }
 
-func (r *repositoryImpl) AddAccountBalance(ctx context.Context, id int64, amount float64) (*models.Account, error) {
+func (r *repositoryImpl) AddAccountBalance(ctx context.Context, id int64, amount float64) (models.Account, error) {
 	query := "UPDATE accounts SET balance = balance + @amount WHERE id = @id RETURNING id, owner, balance, currency, created_at"
 	args := pgx.NamedArgs{
 		"id":     id,
@@ -124,10 +124,10 @@ func (r *repositoryImpl) AddAccountBalance(ctx context.Context, id int64, amount
 
 	err := r.pool.QueryRow(ctx, query, args).Scan(&account.ID, &account.Owner, &account.Balance, &account.Currency, &account.CreatedAt)
 	if err != nil {
-		return nil, err
+		return account, err
 	}
 
-	return &account, nil
+	return account, nil
 }
 
 func (r *repositoryImpl) DeleteAccount(ctx context.Context, id int64) error {
@@ -160,7 +160,7 @@ func (r *repositoryImpl) CreateEntry(ctx context.Context, entry *models.Entry) (
 	return e, nil
 }
 
-func (r *repositoryImpl) GetEntry(ctx context.Context, id int64) (*models.Entry, error) {
+func (r *repositoryImpl) GetEntry(ctx context.Context, id int64) (models.Entry, error) {
 	var entry models.Entry
 	query := `SELECT id, account_id, amount, created_at FROM entries WHERE id = @id`
 	args := pgx.NamedArgs{
@@ -169,10 +169,10 @@ func (r *repositoryImpl) GetEntry(ctx context.Context, id int64) (*models.Entry,
 
 	err := r.pool.QueryRow(ctx, query, args).Scan(&entry.ID, &entry.AccountID, &entry.Amount, &entry.CreatedAt)
 	if err != nil {
-		return &entry, err
+		return entry, err
 	}
 
-	return &entry, nil
+	return entry, nil
 }
 
 func (r *repositoryImpl) ListEntries(ctx context.Context, accountID, limit, offset int64) ([]models.Entry, error) {
@@ -228,7 +228,7 @@ func (r *repositoryImpl) CreateTransaction(ctx context.Context, transaction *mod
 	return t, nil
 }
 
-func (r *repositoryImpl) GetTransaction(ctx context.Context, id int64) (*models.Transaction, error) {
+func (r *repositoryImpl) GetTransaction(ctx context.Context, id int64) (models.Transaction, error) {
 	var transaction models.Transaction
 	query := `SELECT id, from_account_id, to_account_id, amount, fee, currency, description, created_at FROM transactions WHERE id = @id`
 	args := pgx.NamedArgs{
@@ -237,10 +237,10 @@ func (r *repositoryImpl) GetTransaction(ctx context.Context, id int64) (*models.
 
 	err := r.pool.QueryRow(ctx, query, args).Scan(&transaction.ID, &transaction.FromAccountID, &transaction.ToAccountID, &transaction.Amount, &transaction.Fee, &transaction.Currency, &transaction.Description, &transaction.CreatedAt)
 	if err != nil {
-		return &transaction, err
+		return transaction, err
 	}
-
-	return &transaction, nil
+	
+	return transaction, nil
 }
 
 func (r *repositoryImpl) ListTransactions(ctx context.Context, fromAccountID, toAccountID, limit, offset int64) ([]models.Transaction, error) {

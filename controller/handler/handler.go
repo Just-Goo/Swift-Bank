@@ -21,6 +21,6 @@ type Handler struct {
 
 func NewHandler(s service.ServiceProvider) *Handler {
 	return &Handler{
-		H: NewHandlerImpl(s),
+		H: newHandlerImpl(s),
 	}
 }

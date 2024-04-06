@@ -1,11 +1,12 @@
 package handler
 
-import ( 
+import (
 	"net/http"
 
 	"github.com/Just-Goo/Swift_Bank/models"
 	"github.com/Just-Goo/Swift_Bank/service"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 )
 
 type handlerImpl struct {
@@ -13,7 +14,7 @@ type handlerImpl struct {
 	router  *gin.Engine
 }
 
-func NewHandlerImpl(s service.ServiceProvider) *handlerImpl {
+func newHandlerImpl(s service.ServiceProvider) *handlerImpl {
 	handlerImpl := handlerImpl{
 		service: s,
 	}
@@ -30,7 +31,10 @@ func NewHandlerImpl(s service.ServiceProvider) *handlerImpl {
 	// if !inProduction {
 	r.Use(gin.Logger())
 	// }
+	
 	handlerImpl.router = r
+	handlerImpl.registerRoutes()
+
 	return &handlerImpl
 }
 
@@ -40,6 +44,23 @@ func (h *handlerImpl) GetGin() *gin.Engine {
 
 func (h *handlerImpl) StartServer(address string) error {
 	return h.router.Run(address)
+}
+
+func (h *handlerImpl) registerRoutes() {
+	v1 := h.router.Group("sb/api/v1")
+	{
+		// default route
+		v1.GET("", func(c *gin.Context) {
+			c.Writer.Write([]byte("Swift Bank"))
+		})
+
+		v1.POST("/account", h.SignUp)
+		v1.GET("/account/:id", h.GetAccount)
+		v1.GET("/accounts", h.ListAccounts)
+		v1.PUT("/account/:id", h.UpdateAccount)
+		v1.DELETE("/account/:id", h.DeleteAccount)
+	}
+
 }
 
 func (h *handlerImpl) SignUp(ctx *gin.Context) {
@@ -67,7 +88,7 @@ func (h *handlerImpl) GetAccount(ctx *gin.Context) {
 
 	account, err := h.service.GetAccount(ctx, req.ID)
 	if err != nil {
-		if err.Error() == "no rows in result set" {
+		if err == pgx.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, h.errorResponse(err))
 			return
 		}
@@ -100,14 +121,14 @@ func (h *handlerImpl) UpdateAccount(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
 		return
 	}
-	
+
 	var update models.UpdateAccountRequest
 	if err := ctx.ShouldBindJSON(&update); err != nil {
 		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
 		return
 	}
 
-	account, err := h.service.UpdateAccount(ctx, req.ID, update.Balance)
+	account, err := h.service.AddAccountBalance(ctx, req.ID, update.Balance)
 	if err != nil {
 		if err.Error() == "no rows in result set" {
 			ctx.JSON(http.StatusNotFound, h.errorResponse(err))

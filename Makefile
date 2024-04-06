@@ -22,4 +22,10 @@ test:
 run:
 	go run main.go
 
-.PHONY: postgres16 createdb dropdb migrateup migratedown test run createmigration
+mockrepo:
+	mockgen -package mockedproviders -destination mock/repository_provider.go github.com/Just-Goo/Swift_Bank/repository RepositoryProvider
+
+mockservice:
+	mockgen -package mockedproviders -destination mock/service_provider.go github.com/Just-Goo/Swift_Bank/service ServiceProvider
+
+.PHONY: postgres16 createdb dropdb migrateup migratedown test run createmigration mockrepo mockservice
