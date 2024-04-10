@@ -19,7 +19,7 @@ func newRepositoryImpl(p *pgxpool.Pool) *repositoryImpl {
 	}
 }
 
-func (r *repositoryImpl) CreateAccount(ctx context.Context, account *models.Account) (models.Account, error) {
+func (r *repositoryImpl) CreateAccount(ctx context.Context, account models.Account) (models.Account, error) {
 	var a models.Account
 	query := `INSERT INTO accounts (owner, balance, currency) VALUES (@owner, @balance, @currency) RETURNING id, owner, balance, currency, created_at`
 	args := pgx.NamedArgs{
@@ -144,7 +144,7 @@ func (r *repositoryImpl) DeleteAccount(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (r *repositoryImpl) CreateEntry(ctx context.Context, entry *models.Entry) (models.Entry, error) {
+func (r *repositoryImpl) CreateEntry(ctx context.Context, entry models.Entry) (models.Entry, error) {
 	query := `INSERT INTO entries (account_id, amount) VALUES (@accountID, @amount) RETURNING id, account_id, amount, created_at`
 	args := pgx.NamedArgs{
 		"accountID": entry.AccountID,
@@ -206,7 +206,7 @@ func (r *repositoryImpl) ListEntries(ctx context.Context, accountID, limit, offs
 	return entries, nil
 }
 
-func (r *repositoryImpl) CreateTransaction(ctx context.Context, transaction *models.Transaction) (models.Transaction, error) {
+func (r *repositoryImpl) CreateTransaction(ctx context.Context, transaction models.Transaction) (models.Transaction, error) {
 	query := `INSERT INTO transactions (amount, fee, currency, description, to_account_id, from_account_id) VALUES 
 	(@amount, @fee, @currency, @description, @toAccountID, @fromAccountID) RETURNING  id, from_account_id, to_account_id,
 	 amount, fee, currency, description, created_at`
@@ -239,7 +239,7 @@ func (r *repositoryImpl) GetTransaction(ctx context.Context, id int64) (models.T
 	if err != nil {
 		return transaction, err
 	}
-	
+
 	return transaction, nil
 }
 
@@ -276,6 +276,69 @@ func (r *repositoryImpl) ListTransactions(ctx context.Context, fromAccountID, to
 	return transactions, nil
 }
 
+func (r *repositoryImpl) CreateUser(ctx context.Context, user models.User) (models.User, error) {
+	var u models.User
+	query := `INSERT INTO users (username, hashed_password, full_name, email) VALUES (@userName, @password, @fullName, @email) RETURNING username, hashed_password, full_name, email, password_changed_at, created_at`
+	args := pgx.NamedArgs{
+		"userName": user.UserName,
+		"password": user.HashedPassword,
+		"fullName": user.FullName,
+		"email":    user.Email,
+	}
+
+	err := r.pool.QueryRow(ctx, query, args).Scan(&u.UserName, &u.HashedPassword, &u.FullName, &u.Email, &u.PasswordChangedAt, &u.CreatedAt)
+	if err != nil {
+		return u, err
+	}
+
+	return u, nil
+}
+
+func (r *repositoryImpl) GetUser(ctx context.Context, username string) (models.User, error) {
+	var user models.User
+	query := `SELECT username, hashed_password, full_name, email, password_changed_at, created_at FROM users WHERE username = @username`
+	args := pgx.NamedArgs{
+		"username": username,
+	}
+
+	err := r.pool.QueryRow(ctx, query, args).Scan(&user.UserName, &user.HashedPassword, &user.FullName, &user.Email, &user.PasswordChangedAt, &user.CreatedAt)
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
+func (r *repositoryImpl) ListUsers(ctx context.Context, limit, offset int32) ([]models.User, error) {
+	query := `SELECT username, hashed_password, full_name, email, password_changed_at, created_at FROM users ORDER BY username LIMIT @limit OFFSET @offset`
+	args := pgx.NamedArgs{
+		"limit":  limit,
+		"offset": offset,
+	}
+
+	rows, err := r.pool.Query(ctx, query, args)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	users := []models.User{}
+	for rows.Next() {
+		var user models.User
+		if err := rows.Scan(&user.UserName, &user.HashedPassword, &user.FullName, &user.Email, &user.PasswordChangedAt, &user.CreatedAt); err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
 func (r *repositoryImpl) execTx(ctx context.Context, fn func(pgx.Tx) error) error {
 	tx, err := r.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
@@ -293,7 +356,7 @@ func (r *repositoryImpl) execTx(ctx context.Context, fn func(pgx.Tx) error) erro
 	return tx.Commit(ctx)
 }
 
-func (r *repositoryImpl) TransferTx(ctx context.Context, arg *models.TransferTxParams) (models.TransferTxResult, error) {
+func (r *repositoryImpl) TransferTx(ctx context.Context, arg models.TransferTxParams) (models.TransferTxResult, error) {
 	var result models.TransferTxResult
 
 	err := r.execTx(ctx, func(tx pgx.Tx) error {

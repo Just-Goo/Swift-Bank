@@ -6,12 +6,15 @@ import (
 )
 
 type HandlerProvider interface {
-	SignUp(ctx *gin.Context)
+	CreateAccount(ctx *gin.Context)
 	GetAccount(ctx *gin.Context)
 	ListAccounts(ctx *gin.Context)
 	UpdateAccount(ctx *gin.Context)
 	DeleteAccount(ctx *gin.Context)
 	TransferMoney(ctx *gin.Context)
+	CreateUser(ctx *gin.Context)
+	GetUser(ctx *gin.Context)
+	ListUsers(ctx *gin.Context)
 	GetGin() *gin.Engine
 	StartServer(address string) error
 }

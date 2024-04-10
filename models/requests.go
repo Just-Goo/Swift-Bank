@@ -1,6 +1,6 @@
 package models
 
-type SignUpRequest struct {
+type CreateAccountRequest struct {
 	Owner    string `json:"owner" binding:"required"`
 	Currency string `json:"currency" binding:"required,currency"`
 }
@@ -16,6 +16,17 @@ type ListAccountRequest struct {
 
 type UpdateAccountRequest struct {
 	Balance float64 `json:"balance" binding:"required"`
+}
+
+type CreateUserRequest struct {
+	UserName string `json:"username" binding:"required,alphanum"`
+	Password string `json:"password" binding:"required,min=6"`
+	FullName string `json:"fullname" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
+}
+
+type GetUserRequest struct {
+	UserName string `json:"username" binding:"required,alphanum"`
 }
 
 type TransferMoneyRequest struct {

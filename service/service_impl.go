@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/Just-Goo/Swift_Bank/helpers"
 	"github.com/Just-Goo/Swift_Bank/models"
 	"github.com/Just-Goo/Swift_Bank/repository"
 )
@@ -17,14 +18,14 @@ func newServiceImpl(r repository.RepositoryProvider) *serviceImpl {
 	}
 }
 
-func (s *serviceImpl) CreateAccount(ctx context.Context, data *models.SignUpRequest) (models.Account, error) {
+func (s *serviceImpl) CreateAccount(ctx context.Context, data models.CreateAccountRequest) (models.Account, error) {
 	arg := models.Account{
 		Owner:    data.Owner,
 		Balance:  0,
 		Currency: data.Currency,
 	}
 
-	return s.repo.CreateAccount(ctx, &arg)
+	return s.repo.CreateAccount(ctx, arg)
 }
 
 func (s *serviceImpl) GetAccount(ctx context.Context, id int64) (models.Account, error) {
@@ -56,7 +57,7 @@ func (s *serviceImpl) DeleteAccount(ctx context.Context, id int64) error {
 	return s.repo.DeleteAccount(ctx, id)
 }
 
-func (s *serviceImpl) CreateEntry(ctx context.Context, entry *models.Entry) (models.Entry, error) {
+func (s *serviceImpl) CreateEntry(ctx context.Context, entry models.Entry) (models.Entry, error) {
 
 	return models.Entry{}, nil
 }
@@ -70,7 +71,7 @@ func (s *serviceImpl) ListEntries(ctx context.Context, accountID, limit, offset 
 	return nil, nil
 }
 
-func (s *serviceImpl) CreateTransaction(ctx context.Context, transaction *models.Transaction) (models.Transaction, error) {
+func (s *serviceImpl) CreateTransaction(ctx context.Context, transaction models.Transaction) (models.Transaction, error) {
 	return models.Transaction{}, nil
 
 }
@@ -84,6 +85,30 @@ func (s *serviceImpl) ListTransactions(ctx context.Context, fromAccountID, toAcc
 	return nil, nil
 }
 
-func (s *serviceImpl) TransferTx(ctx context.Context, arg *models.TransferTxParams) (models.TransferTxResult, error) {
+func (s *serviceImpl) CreateUser(ctx context.Context, data models.CreateUserRequest) (models.User, error) {
+	hashedPassword, err := helpers.HashPassword(data.Password)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	arg := models.User{
+		UserName: data.UserName,
+		FullName: data.FullName, 
+		Email: data.Email,
+		HashedPassword: hashedPassword,
+	}
+
+	return s.repo.CreateUser(ctx, arg)
+}
+
+func (s *serviceImpl) GetUser(ctx context.Context, username string) (models.User, error) {
+	return s.repo.GetUser(ctx, username)
+}
+
+func (s *serviceImpl) ListUsers(ctx context.Context, limit, offset int32) ([]models.User, error) {
+	return s.repo.ListUsers(ctx, limit, offset)
+}
+
+func (s *serviceImpl) TransferTx(ctx context.Context, arg models.TransferTxParams) (models.TransferTxResult, error) {
 	return s.repo.TransferTx(ctx, arg)
 }

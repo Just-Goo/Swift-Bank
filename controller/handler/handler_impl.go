@@ -63,25 +63,29 @@ func (h *handlerImpl) registerRoutes() {
 			c.Writer.Write([]byte("Swift Bank"))
 		})
 
-		v1.POST("/account", h.SignUp)
+		v1.POST("/account", h.CreateAccount)
 		v1.GET("/account/:id", h.GetAccount)
 		v1.GET("/accounts", h.ListAccounts)
 		v1.PUT("/account/:id", h.UpdateAccount)
 		v1.DELETE("/account/:id", h.DeleteAccount)
+
+		v1.POST("/user", h.CreateUser)
+		v1.GET("/users/:id", h.GetUser)
+		v1.GET("/users", h.ListUsers)
 
 		v1.POST("/transfer", h.TransferMoney)
 	}
 
 }
 
-func (h *handlerImpl) SignUp(ctx *gin.Context) {
-	var req models.SignUpRequest
+func (h *handlerImpl) CreateAccount(ctx *gin.Context) {
+	var req models.CreateAccountRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
 		return
 	}
 
-	createdAccount, err := h.service.CreateAccount(ctx, &req)
+	createdAccount, err := h.service.CreateAccount(ctx, req)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
 		return
@@ -141,7 +145,7 @@ func (h *handlerImpl) UpdateAccount(ctx *gin.Context) {
 
 	account, err := h.service.AddAccountBalance(ctx, req.ID, update.Balance)
 	if err != nil {
-		if err.Error() == "no rows in result set" {
+		if err == pgx.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, h.errorResponse(err))
 			return
 		}
@@ -161,7 +165,7 @@ func (h *handlerImpl) DeleteAccount(ctx *gin.Context) {
 
 	err := h.service.DeleteAccount(ctx, req.ID)
 	if err != nil {
-		if err.Error() == "no rows in result set" {
+		if err == pgx.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, h.errorResponse(err))
 			return
 		}
@@ -170,6 +174,58 @@ func (h *handlerImpl) DeleteAccount(ctx *gin.Context) {
 	}
 
 	ctx.String(http.StatusOK, "account deleted")
+}
+
+func (h *handlerImpl) CreateUser(ctx *gin.Context) {
+	var req models.CreateUserRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
+		return
+	}
+
+	createdUser, err := h.service.CreateUser(ctx, req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, createdUser)
+}
+
+func (h *handlerImpl) GetUser(ctx *gin.Context) {
+	var req models.GetUserRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
+		return
+	}
+
+	user, err := h.service.GetUser(ctx, req.UserName)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, h.errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, user)
+}
+
+func (h *handlerImpl) ListUsers(ctx *gin.Context) {
+	var req models.ListAccountRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
+		return
+	}
+
+	users, err := h.service.ListUsers(ctx, req.PageSize, ((req.PageID - 1) * req.PageSize))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, users)
 }
 
 func (h *handlerImpl) TransferMoney(ctx *gin.Context) {
@@ -197,7 +253,7 @@ func (h *handlerImpl) TransferMoney(ctx *gin.Context) {
 		Fee:           req.Fee,
 	}
 
-	createdAccount, err := h.service.TransferTx(ctx, &arg)
+	createdAccount, err := h.service.TransferTx(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
 		return

@@ -28,10 +28,19 @@ type Transaction struct {
 	CreatedAt     time.Time `json:"created_at"`
 }
 
+type User struct { 
+	UserName          string    `json:"username"`
+	HashedPassword    string    `json:"-"`
+	FullName          string    `json:"full_name"`
+	Email             string    `json:"email"`
+	PasswordChangedAt time.Time `json:"password_changed_at"`
+	CreatedAt         time.Time `json:"created_at"`
+}
+
 type TransferTxParams struct {
 	FromAccountID int64   `json:"from_account_id"`
 	ToAccountID   int64   `json:"to_account_id"`
-	Amount        float64   `json:"amount"`
+	Amount        float64 `json:"amount"`
 	Currency      string  `json:"currency"`
 	Description   string  `json:"description"`
 	Fee           float64 `json:"fee"`

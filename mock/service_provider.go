@@ -56,7 +56,7 @@ func (mr *MockServiceProviderMockRecorder) AddAccountBalance(arg0, arg1, arg2 an
 }
 
 // CreateAccount mocks base method.
-func (m *MockServiceProvider) CreateAccount(arg0 context.Context, arg1 *models.SignUpRequest) (models.Account, error) {
+func (m *MockServiceProvider) CreateAccount(arg0 context.Context, arg1 models.CreateAccountRequest) (models.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateAccount", arg0, arg1)
 	ret0, _ := ret[0].(models.Account)
@@ -71,7 +71,7 @@ func (mr *MockServiceProviderMockRecorder) CreateAccount(arg0, arg1 any) *gomock
 }
 
 // CreateEntry mocks base method.
-func (m *MockServiceProvider) CreateEntry(arg0 context.Context, arg1 *models.Entry) (models.Entry, error) {
+func (m *MockServiceProvider) CreateEntry(arg0 context.Context, arg1 models.Entry) (models.Entry, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateEntry", arg0, arg1)
 	ret0, _ := ret[0].(models.Entry)
@@ -86,7 +86,7 @@ func (mr *MockServiceProviderMockRecorder) CreateEntry(arg0, arg1 any) *gomock.C
 }
 
 // CreateTransaction mocks base method.
-func (m *MockServiceProvider) CreateTransaction(arg0 context.Context, arg1 *models.Transaction) (models.Transaction, error) {
+func (m *MockServiceProvider) CreateTransaction(arg0 context.Context, arg1 models.Transaction) (models.Transaction, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateTransaction", arg0, arg1)
 	ret0, _ := ret[0].(models.Transaction)
@@ -98,6 +98,21 @@ func (m *MockServiceProvider) CreateTransaction(arg0 context.Context, arg1 *mode
 func (mr *MockServiceProviderMockRecorder) CreateTransaction(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTransaction", reflect.TypeOf((*MockServiceProvider)(nil).CreateTransaction), arg0, arg1)
+}
+
+// CreateUser mocks base method.
+func (m *MockServiceProvider) CreateUser(arg0 context.Context, arg1 models.CreateUserRequest) (models.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateUser", arg0, arg1)
+	ret0, _ := ret[0].(models.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateUser indicates an expected call of CreateUser.
+func (mr *MockServiceProviderMockRecorder) CreateUser(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockServiceProvider)(nil).CreateUser), arg0, arg1)
 }
 
 // DeleteAccount mocks base method.
@@ -174,6 +189,21 @@ func (mr *MockServiceProviderMockRecorder) GetTransaction(arg0, arg1 any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTransaction", reflect.TypeOf((*MockServiceProvider)(nil).GetTransaction), arg0, arg1)
 }
 
+// GetUser mocks base method.
+func (m *MockServiceProvider) GetUser(arg0 context.Context, arg1 string) (models.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUser", arg0, arg1)
+	ret0, _ := ret[0].(models.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUser indicates an expected call of GetUser.
+func (mr *MockServiceProviderMockRecorder) GetUser(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockServiceProvider)(nil).GetUser), arg0, arg1)
+}
+
 // ListAccounts mocks base method.
 func (m *MockServiceProvider) ListAccounts(arg0 context.Context, arg1, arg2 int32) ([]models.Account, error) {
 	m.ctrl.T.Helper()
@@ -219,8 +249,23 @@ func (mr *MockServiceProviderMockRecorder) ListTransactions(arg0, arg1, arg2, ar
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTransactions", reflect.TypeOf((*MockServiceProvider)(nil).ListTransactions), arg0, arg1, arg2, arg3, arg4)
 }
 
+// ListUsers mocks base method.
+func (m *MockServiceProvider) ListUsers(arg0 context.Context, arg1, arg2 int32) ([]models.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListUsers", arg0, arg1, arg2)
+	ret0, _ := ret[0].([]models.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListUsers indicates an expected call of ListUsers.
+func (mr *MockServiceProviderMockRecorder) ListUsers(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUsers", reflect.TypeOf((*MockServiceProvider)(nil).ListUsers), arg0, arg1, arg2)
+}
+
 // TransferTx mocks base method.
-func (m *MockServiceProvider) TransferTx(arg0 context.Context, arg1 *models.TransferTxParams) (models.TransferTxResult, error) {
+func (m *MockServiceProvider) TransferTx(arg0 context.Context, arg1 models.TransferTxParams) (models.TransferTxResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TransferTx", arg0, arg1)
 	ret0, _ := ret[0].(models.TransferTxResult)
