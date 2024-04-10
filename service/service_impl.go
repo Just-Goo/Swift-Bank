@@ -18,9 +18,9 @@ func newServiceImpl(r repository.RepositoryProvider) *serviceImpl {
 	}
 }
 
-func (s *serviceImpl) CreateAccount(ctx context.Context, data models.CreateAccountRequest) (models.Account, error) {
+func (s *serviceImpl) CreateAccount(ctx context.Context, data models.CreateAccountRequest, username string) (models.Account, error) {
 	arg := models.Account{
-		Owner:    data.Owner,
+		Owner:    username,
 		Balance:  0,
 		Currency: data.Currency,
 	}
@@ -36,8 +36,8 @@ func (s *serviceImpl) GetAccountForUpdate(ctx context.Context, id int64) (models
 	return s.repo.GetAccountForUpdate(ctx, id)
 }
 
-func (s *serviceImpl) ListAccounts(ctx context.Context, limit, offset int32) ([]models.Account, error) {
-	return s.repo.ListAccounts(ctx, limit, offset)
+func (s *serviceImpl) ListAccounts(ctx context.Context, name string, limit, offset int32) ([]models.Account, error) {
+	return s.repo.ListAccounts(ctx, name, limit, offset)
 }
 
 func (s *serviceImpl) UpdateAccount(ctx context.Context, id int64, balance float64) (models.Account, error) {

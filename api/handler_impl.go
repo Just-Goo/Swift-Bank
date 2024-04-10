@@ -1,4 +1,4 @@
-package handler
+package api
 
 import (
 	"errors"
@@ -25,7 +25,7 @@ type handlerImpl struct {
 }
 
 func newHandlerImpl(c config.Config, s service.ServiceProvider) (*handlerImpl, error) {
-	tokenMaker, err := token.NewJWTMaker(c.TokenSymmetricKey)
+	tokenMaker, err := token.NewPastoMaker(c.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
 	}
@@ -64,6 +64,10 @@ func (h *handlerImpl) GetGin() *gin.Engine {
 	return h.router
 }
 
+func (h *handlerImpl) GetTokenMaker() token.Maker {
+	return h.tokenMaker
+}
+
 func (h *handlerImpl) StartServer(address string) error {
 	return h.router.Run(address)
 }
@@ -76,18 +80,20 @@ func (h *handlerImpl) registerRoutes() {
 			c.Writer.Write([]byte("Swift Bank"))
 		})
 
-		v1.POST("/account", h.CreateAccount)
-		v1.GET("/account/:id", h.GetAccount)
-		v1.GET("/accounts", h.ListAccounts)
-		v1.PUT("/account/:id", h.UpdateAccount)
-		v1.DELETE("/account/:id", h.DeleteAccount)
-
 		v1.POST("/user", h.CreateUser)
 		v1.POST("/users/login", h.LoginUser)
-		v1.GET("/users/:id", h.GetUser)
-		v1.GET("/users", h.ListUsers)
 
-		v1.POST("/transfer", h.TransferMoney)
+		authRoutes := v1.Group("/").Use(auth(h.tokenMaker))
+
+		authRoutes.POST("/account", h.CreateAccount)
+		authRoutes.GET("/account/:id", h.GetAccount)
+		authRoutes.GET("/accounts", h.ListAccounts)
+		authRoutes.PUT("/account/:id", h.UpdateAccount)
+		authRoutes.DELETE("/account/:id", h.DeleteAccount)
+
+		authRoutes.GET("/users/:id", h.GetUser)
+		authRoutes.GET("/users", h.ListUsers)
+		authRoutes.POST("/transfer", h.TransferMoney)
 	}
 
 }
@@ -99,7 +105,8 @@ func (h *handlerImpl) CreateAccount(ctx *gin.Context) {
 		return
 	}
 
-	createdAccount, err := h.service.CreateAccount(ctx, req)
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	createdAccount, err := h.service.CreateAccount(ctx, req, authPayload.UserName)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -130,6 +137,14 @@ func (h *handlerImpl) GetAccount(ctx *gin.Context) {
 		return
 	}
 
+	// authorization rule
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if account.Owner != authPayload.UserName {
+		err := errors.New("account does not belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, h.errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, account)
 }
 
@@ -140,7 +155,8 @@ func (h *handlerImpl) ListAccounts(ctx *gin.Context) {
 		return
 	}
 
-	accounts, err := h.service.ListAccounts(ctx, req.PageSize, ((req.PageID - 1) * req.PageSize))
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	accounts, err := h.service.ListAccounts(ctx, authPayload.UserName, req.PageSize, ((req.PageID - 1) * req.PageSize))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
 		return
@@ -295,12 +311,29 @@ func (h *handlerImpl) TransferMoney(ctx *gin.Context) {
 		return
 	}
 
+	fromAccount, valid := h.validAccount(ctx, req.FromAccountID, req.Currency)
 	// check if the currencies match
-	if !h.validAccount(ctx, req.FromAccountID, req.Currency) {
+	if !valid {
 		return
 	}
 
-	if !h.validAccount(ctx, req.ToAccountID, req.Currency) {
+	// check if sender has enough money 
+	if fromAccount.Balance < req.Amount {
+		err := errors.New("sender does not have sufficient funds to transfer")
+		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
+		return
+	}
+
+	// authorization rule
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if fromAccount.Owner != authPayload.UserName {
+		err := errors.New("sender account does not belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, h.errorResponse(err))
+		return
+	}
+
+	_, valid = h.validAccount(ctx, req.ToAccountID, req.Currency)
+	if !valid {
 		return
 	}
 
@@ -322,24 +355,24 @@ func (h *handlerImpl) TransferMoney(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, createdAccount)
 }
 
-func (h *handlerImpl) validAccount(ctx *gin.Context, accountID int64, currency string) bool {
+func (h *handlerImpl) validAccount(ctx *gin.Context, accountID int64, currency string) (models.Account, bool) {
 	account, err := h.service.GetAccount(ctx, accountID)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, h.errorResponse(err))
-			return false
+			return account, false
 		}
 		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
-		return false
+		return account, false
 	}
 
 	if account.Currency != currency {
 		err = fmt.Errorf("account [%d] currency mismatch: %s vs %s", accountID, account.Currency, currency)
 		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
-		return false
+		return account, false
 	}
 
-	return true
+	return account, true
 }
 
 func (h *handlerImpl) errorResponse(err error) gin.H {

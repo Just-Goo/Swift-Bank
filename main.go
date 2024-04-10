@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/Just-Goo/Swift_Bank/config"
-	"github.com/Just-Goo/Swift_Bank/controller/handler" 
+	"github.com/Just-Goo/Swift_Bank/api" 
 	"github.com/Just-Goo/Swift_Bank/database"
 	"github.com/Just-Goo/Swift_Bank/repository"
 	"github.com/Just-Goo/Swift_Bank/service"
@@ -35,7 +35,7 @@ func main() {
 
 	repository := repository.NewRepository(pool)
 	service := service.NewService(repository.R)
-	handler, err := handler.NewHandler(*config, service.S)
+	handler, err := api.NewHandler(*config, service.S)
 	if err != nil {
 		log.Fatal("failed to load handler:", err)
 	}

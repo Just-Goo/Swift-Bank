@@ -56,18 +56,18 @@ func (mr *MockServiceProviderMockRecorder) AddAccountBalance(arg0, arg1, arg2 an
 }
 
 // CreateAccount mocks base method.
-func (m *MockServiceProvider) CreateAccount(arg0 context.Context, arg1 models.CreateAccountRequest) (models.Account, error) {
+func (m *MockServiceProvider) CreateAccount(arg0 context.Context, arg1 models.CreateAccountRequest, arg2 string) (models.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateAccount", arg0, arg1)
+	ret := m.ctrl.Call(m, "CreateAccount", arg0, arg1, arg2)
 	ret0, _ := ret[0].(models.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateAccount indicates an expected call of CreateAccount.
-func (mr *MockServiceProviderMockRecorder) CreateAccount(arg0, arg1 any) *gomock.Call {
+func (mr *MockServiceProviderMockRecorder) CreateAccount(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAccount", reflect.TypeOf((*MockServiceProvider)(nil).CreateAccount), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAccount", reflect.TypeOf((*MockServiceProvider)(nil).CreateAccount), arg0, arg1, arg2)
 }
 
 // CreateEntry mocks base method.
@@ -205,18 +205,18 @@ func (mr *MockServiceProviderMockRecorder) GetUser(arg0, arg1 any) *gomock.Call 
 }
 
 // ListAccounts mocks base method.
-func (m *MockServiceProvider) ListAccounts(arg0 context.Context, arg1, arg2 int32) ([]models.Account, error) {
+func (m *MockServiceProvider) ListAccounts(arg0 context.Context, arg1 string, arg2, arg3 int32) ([]models.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAccounts", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ListAccounts", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].([]models.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListAccounts indicates an expected call of ListAccounts.
-func (mr *MockServiceProviderMockRecorder) ListAccounts(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockServiceProviderMockRecorder) ListAccounts(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAccounts", reflect.TypeOf((*MockServiceProvider)(nil).ListAccounts), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAccounts", reflect.TypeOf((*MockServiceProvider)(nil).ListAccounts), arg0, arg1, arg2, arg3)
 }
 
 // ListEntries mocks base method.

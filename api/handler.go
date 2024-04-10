@@ -1,8 +1,9 @@
-package handler
+package api
 
 import (
 	"github.com/Just-Goo/Swift_Bank/config"
 	"github.com/Just-Goo/Swift_Bank/service"
+	"github.com/Just-Goo/Swift_Bank/token"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,6 +19,7 @@ type HandlerProvider interface {
 	ListUsers(ctx *gin.Context)
 	GetGin() *gin.Engine
 	StartServer(address string) error
+	GetTokenMaker() token.Maker
 }
 
 type Handler struct {

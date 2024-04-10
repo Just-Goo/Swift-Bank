@@ -8,10 +8,10 @@ import (
 )
 
 type ServiceProvider interface {
-	CreateAccount(ctx context.Context, data models.CreateAccountRequest) (models.Account, error)
+	CreateAccount(ctx context.Context, data models.CreateAccountRequest, username string) (models.Account, error)
 	GetAccount(ctx context.Context, id int64) (models.Account, error)
 	GetAccountForUpdate(ctx context.Context, id int64) (models.Account, error)
-	ListAccounts(ctx context.Context, limit, offset int32) ([]models.Account, error)
+	ListAccounts(ctx context.Context, naem string, limit, offset int32) ([]models.Account, error)
 	UpdateAccount(ctx context.Context, id int64, balance float64) (models.Account, error)
 	AddAccountBalance(ctx context.Context, id int64, balance float64) (models.Account, error)
 	DeleteAccount(ctx context.Context, id int64) error

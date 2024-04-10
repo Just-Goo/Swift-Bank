@@ -1,7 +1,6 @@
 package models
 
-type CreateAccountRequest struct {
-	Owner    string `json:"owner" binding:"required"`
+type CreateAccountRequest struct { 
 	Currency string `json:"currency" binding:"required,currency"`
 }
 
