@@ -13,8 +13,14 @@ createmigration:
 migrateup:
 	migrate -path database/migrations -database "postgresql://root:swiftsecret@localhost:5432/Swift_Bank_DB?sslmode=disable" -verbose up
 
+migrateup1:
+	migrate -path database/migrations -database "postgresql://root:swiftsecret@localhost:5432/Swift_Bank_DB?sslmode=disable" -verbose up 1
+
 migratedown:
 	migrate -path database/migrations -database "postgresql://root:swiftsecret@localhost:5432/Swift_Bank_DB?sslmode=disable" -verbose down
+
+migratedown1:
+	migrate -path database/migrations -database "postgresql://root:swiftsecret@localhost:5432/Swift_Bank_DB?sslmode=disable" -verbose down 1
 
 test:
 	go clean -testcache && go test -v -cover ./...
@@ -28,4 +34,4 @@ mockrepo:
 mockservice:
 	mockgen -package mockedproviders -destination mock/service_provider.go github.com/Just-Goo/Swift_Bank/service ServiceProvider
 
-.PHONY: postgres16 createdb dropdb migrateup migratedown test run createmigration mockrepo mockservice
+.PHONY: postgres16 createdb dropdb migrateup migrateup1 migratedown migratedown1 test run createmigration mockrepo mockservice

@@ -11,6 +11,7 @@ type HandlerProvider interface {
 	ListAccounts(ctx *gin.Context)
 	UpdateAccount(ctx *gin.Context)
 	DeleteAccount(ctx *gin.Context)
+	TransferMoney(ctx *gin.Context)
 	GetGin() *gin.Engine
 	StartServer(address string) error
 }

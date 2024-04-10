@@ -1,11 +1,15 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/Just-Goo/Swift_Bank/helpers"
 	"github.com/Just-Goo/Swift_Bank/models"
 	"github.com/Just-Goo/Swift_Bank/service"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -20,6 +24,11 @@ func newHandlerImpl(s service.ServiceProvider) *handlerImpl {
 	}
 	r := gin.New()
 
+	// register currency validator
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("currency", helpers.ValidCurrency)
+	}
+
 	// inProduction := false
 	// r.Use(gin.Recovery())
 
@@ -31,7 +40,7 @@ func newHandlerImpl(s service.ServiceProvider) *handlerImpl {
 	// if !inProduction {
 	r.Use(gin.Logger())
 	// }
-	
+
 	handlerImpl.router = r
 	handlerImpl.registerRoutes()
 
@@ -59,6 +68,8 @@ func (h *handlerImpl) registerRoutes() {
 		v1.GET("/accounts", h.ListAccounts)
 		v1.PUT("/account/:id", h.UpdateAccount)
 		v1.DELETE("/account/:id", h.DeleteAccount)
+
+		v1.POST("/transfer", h.TransferMoney)
 	}
 
 }
@@ -159,6 +170,60 @@ func (h *handlerImpl) DeleteAccount(ctx *gin.Context) {
 	}
 
 	ctx.String(http.StatusOK, "account deleted")
+}
+
+func (h *handlerImpl) TransferMoney(ctx *gin.Context) {
+	var req models.TransferMoneyRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
+		return
+	}
+
+	// check if the currencies match
+	if !h.validAccount(ctx, req.FromAccountID, req.Currency) {
+		return
+	}
+
+	if !h.validAccount(ctx, req.ToAccountID, req.Currency) {
+		return
+	}
+
+	arg := models.TransferTxParams{
+		FromAccountID: req.FromAccountID,
+		ToAccountID:   req.ToAccountID,
+		Amount:        req.Amount,
+		Currency:      req.Currency,
+		Description:   req.Description,
+		Fee:           req.Fee,
+	}
+
+	createdAccount, err := h.service.TransferTx(ctx, &arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, createdAccount)
+}
+
+func (h *handlerImpl) validAccount(ctx *gin.Context, accountID int64, currency string) bool {
+	account, err := h.service.GetAccount(ctx, accountID)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, h.errorResponse(err))
+			return false
+		}
+		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
+		return false
+	}
+
+	if account.Currency != currency {
+		err = fmt.Errorf("account [%d] currency mismatch: %s vs %s", accountID, account.Currency, currency)
+		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
+		return false
+	}
+
+	return true
 }
 
 func (h *handlerImpl) errorResponse(err error) gin.H {

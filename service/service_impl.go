@@ -85,6 +85,5 @@ func (s *serviceImpl) ListTransactions(ctx context.Context, fromAccountID, toAcc
 }
 
 func (s *serviceImpl) TransferTx(ctx context.Context, arg *models.TransferTxParams) (models.TransferTxResult, error) {
-
-	return models.TransferTxResult{}, nil
+	return s.repo.TransferTx(ctx, arg)
 }
