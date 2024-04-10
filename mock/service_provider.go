@@ -264,6 +264,21 @@ func (mr *MockServiceProviderMockRecorder) ListUsers(arg0, arg1, arg2 any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUsers", reflect.TypeOf((*MockServiceProvider)(nil).ListUsers), arg0, arg1, arg2)
 }
 
+// LoginUser mocks base method.
+func (m *MockServiceProvider) LoginUser(arg0 context.Context, arg1 models.LoginUserRequest) (models.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LoginUser", arg0, arg1)
+	ret0, _ := ret[0].(models.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LoginUser indicates an expected call of LoginUser.
+func (mr *MockServiceProviderMockRecorder) LoginUser(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoginUser", reflect.TypeOf((*MockServiceProvider)(nil).LoginUser), arg0, arg1)
+}
+
 // TransferTx mocks base method.
 func (m *MockServiceProvider) TransferTx(arg0 context.Context, arg1 models.TransferTxParams) (models.TransferTxResult, error) {
 	m.ctrl.T.Helper()

@@ -125,7 +125,8 @@ func TestGetAccountAPI(t *testing.T) {
 			tc.buildStubs(service)
 
 			// create server
-			server := NewHandler(service)
+			server, err := NewHandler(testConfig, service)
+			require.NoError(t, err)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/sb/api/v1/account/%d", tc.accountID)
@@ -274,7 +275,8 @@ func TestCreateUserAPI(t *testing.T) {
 			tc.buildStubs(service)
 
 			// create server
-			server := NewHandler(service)
+			server, err := NewHandler(testConfig, service)
+			require.NoError(t, err)
 			recorder := httptest.NewRecorder()
 
 			// marshal body data to JSON

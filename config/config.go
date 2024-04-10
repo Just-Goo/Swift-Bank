@@ -1,17 +1,23 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"time"
+
+	"github.com/spf13/viper"
+)
 
 type Config struct {
-	Dsn                    string `mapstructure:"DSN"`
-	Port                   string `mapstructure:"PORT"`
-	JwtSecretKey           string `mapstructure:"JWT_SECRET_KEY"`
-	RefreshJwtSecretKey    string `mapstructure:"REFRESH_JWT_SECRET_KEY"`
-	Email                  string `mapstructure:"EMAIL"`
-	EmailPassword          string `mapstructure:"EMAIL_PASSWORD"`
+	Dsn                 string    `mapstructure:"DSN"`
+	Port                string    `mapstructure:"PORT"`
+	TokenSymmetricKey   string    `mapstructure:"TOKEN_SYMMETRIC_KEY"`
+	AccessTokenDuration time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+	JwtSecretKey        string    `mapstructure:"JWT_SECRET_KEY"`
+	RefreshJwtSecretKey string    `mapstructure:"REFRESH_JWT_SECRET_KEY"`
+	Email               string    `mapstructure:"EMAIL"`
+	EmailPassword       string    `mapstructure:"EMAIL_PASSWORD"`
 }
 
-func LoadConfig(path string) (config *Config, err error)  {
+func LoadConfig(path string) (config *Config, err error) {
 	viper.AddConfigPath(path)
 	viper.SetConfigName("app")
 	viper.SetConfigType("env")

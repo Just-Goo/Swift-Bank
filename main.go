@@ -35,7 +35,10 @@ func main() {
 
 	repository := repository.NewRepository(pool)
 	service := service.NewService(repository.R)
-	handler := handler.NewHandler(service.S)
+	handler, err := handler.NewHandler(*config, service.S)
+	if err != nil {
+		log.Fatal("failed to load handler:", err)
+	}
 
 	err = handler.H.StartServer(config.Port)
 	if err != nil {

@@ -25,6 +25,11 @@ type CreateUserRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 }
 
+type LoginUserRequest struct {
+	UserName string `json:"username" binding:"required,alphanum"`
+	Password string `json:"password" binding:"required,min=6"` 
+}
+
 type GetUserRequest struct {
 	UserName string `json:"username" binding:"required,alphanum"`
 }

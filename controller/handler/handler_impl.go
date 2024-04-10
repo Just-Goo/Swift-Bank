@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Just-Goo/Swift_Bank/config"
 	"github.com/Just-Goo/Swift_Bank/helpers"
 	"github.com/Just-Goo/Swift_Bank/models"
 	"github.com/Just-Goo/Swift_Bank/service"
+	"github.com/Just-Goo/Swift_Bank/token"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
@@ -16,13 +18,22 @@ import (
 )
 
 type handlerImpl struct {
-	service service.ServiceProvider
-	router  *gin.Engine
+	service    service.ServiceProvider
+	tokenMaker token.Maker
+	router     *gin.Engine
+	config     config.Config
 }
 
-func newHandlerImpl(s service.ServiceProvider) *handlerImpl {
+func newHandlerImpl(c config.Config, s service.ServiceProvider) (*handlerImpl, error) {
+	tokenMaker, err := token.NewJWTMaker(c.TokenSymmetricKey)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create token maker: %w", err)
+	}
+
 	handlerImpl := handlerImpl{
-		service: s,
+		service:    s,
+		config:     c,
+		tokenMaker: tokenMaker,
 	}
 	r := gin.New()
 
@@ -46,7 +57,7 @@ func newHandlerImpl(s service.ServiceProvider) *handlerImpl {
 	handlerImpl.router = r
 	handlerImpl.registerRoutes()
 
-	return &handlerImpl
+	return &handlerImpl, nil
 }
 
 func (h *handlerImpl) GetGin() *gin.Engine {
@@ -72,6 +83,7 @@ func (h *handlerImpl) registerRoutes() {
 		v1.DELETE("/account/:id", h.DeleteAccount)
 
 		v1.POST("/user", h.CreateUser)
+		v1.POST("/users/login", h.LoginUser)
 		v1.GET("/users/:id", h.GetUser)
 		v1.GET("/users", h.ListUsers)
 
@@ -195,7 +207,7 @@ func (h *handlerImpl) CreateUser(ctx *gin.Context) {
 		return
 	}
 	req.Password = hashedPassword
-	
+
 	createdUser, err := h.service.CreateUser(ctx, req)
 	if err != nil {
 		var pgErr *pgconn.PgError
@@ -208,6 +220,36 @@ func (h *handlerImpl) CreateUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, createdUser)
+}
+
+func (h *handlerImpl) LoginUser(ctx *gin.Context) {
+	var req models.LoginUserRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
+		return
+	}
+
+	user, err := h.service.LoginUser(ctx, req)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusUnauthorized, h.errorResponse(err))
+		return
+	}
+
+	accessToken, err := h.tokenMaker.CreateToken(req.UserName, h.config.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"access_token": accessToken,
+		"user":         user,
+	})
 }
 
 func (h *handlerImpl) GetUser(ctx *gin.Context) {

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/Just-Goo/Swift_Bank/config"
 	"github.com/Just-Goo/Swift_Bank/service"
 	"github.com/gin-gonic/gin"
 )
@@ -23,8 +24,12 @@ type Handler struct {
 	H HandlerProvider
 }
 
-func NewHandler(s service.ServiceProvider) *Handler {
-	return &Handler{
-		H: newHandlerImpl(s),
+func NewHandler(c config.Config, s service.ServiceProvider) (*Handler, error) {
+	handler, err := newHandlerImpl(c, s)
+	if err != nil {
+		return nil, err
 	}
+	return &Handler{
+		H: handler,
+	}, nil
 }

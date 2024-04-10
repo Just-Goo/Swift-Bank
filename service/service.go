@@ -23,6 +23,7 @@ type ServiceProvider interface {
 	ListTransactions(ctx context.Context, fromAccountID, toAccountID, limit, offset int64) ([]models.Transaction, error)
 	TransferTx(ctx context.Context, arg models.TransferTxParams) (models.TransferTxResult, error)
 	CreateUser(ctx context.Context, data models.CreateUserRequest) (models.User, error)
+	LoginUser(ctx context.Context, data models.LoginUserRequest) (models.User, error)
 	GetUser(ctx context.Context, username string) (models.User, error)
 	ListUsers(ctx context.Context, limit, offset int32) ([]models.User, error)
 	
