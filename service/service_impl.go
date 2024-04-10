@@ -2,8 +2,7 @@ package service
 
 import (
 	"context"
-
-	"github.com/Just-Goo/Swift_Bank/helpers"
+ 
 	"github.com/Just-Goo/Swift_Bank/models"
 	"github.com/Just-Goo/Swift_Bank/repository"
 )
@@ -86,16 +85,12 @@ func (s *serviceImpl) ListTransactions(ctx context.Context, fromAccountID, toAcc
 }
 
 func (s *serviceImpl) CreateUser(ctx context.Context, data models.CreateUserRequest) (models.User, error) {
-	hashedPassword, err := helpers.HashPassword(data.Password)
-	if err != nil {
-		return models.User{}, err
-	}
 
 	arg := models.User{
 		UserName: data.UserName,
 		FullName: data.FullName, 
 		Email: data.Email,
-		HashedPassword: hashedPassword,
+		HashedPassword: data.Password,
 	}
 
 	return s.repo.CreateUser(ctx, arg)

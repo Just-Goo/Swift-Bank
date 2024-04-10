@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type handlerImpl struct {
@@ -87,6 +89,11 @@ func (h *handlerImpl) CreateAccount(ctx *gin.Context) {
 
 	createdAccount, err := h.service.CreateAccount(ctx, req)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
 		return
 	}
@@ -182,9 +189,20 @@ func (h *handlerImpl) CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
 		return
 	}
-
+	hashedPassword, err := helpers.HashPassword(req.Password)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
+		return
+	}
+	req.Password = hashedPassword
+	
 	createdUser, err := h.service.CreateUser(ctx, req)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
 		return
 	}
