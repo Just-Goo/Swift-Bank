@@ -2,7 +2,7 @@ package token
 
 import (
 	"errors"
-	"fmt"
+	"fmt" 
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -34,7 +34,7 @@ func (j *JWTMaker) CreateToken(username string, duration time.Duration) (string,
 func (j *JWTMaker) VerifyToken(token string) (*Payload, error) {
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
-		if !ok {
+		if !ok { 
 			return nil, ErrInvalidToken
 		}
 		return []byte(j.secretKey), nil
@@ -45,12 +45,12 @@ func (j *JWTMaker) VerifyToken(token string) (*Payload, error) {
 		verr, ok := err.(*jwt.ValidationError)
 		if ok && errors.Is(verr.Inner, ErrExpiredToken) {
 			return nil, ErrExpiredToken
-		}
+		} 
 		return nil, ErrInvalidToken
 	}
 
 	payload, ok := jwtToken.Claims.(*Payload)
-	if ok {
+	if !ok { 
 		return nil, ErrInvalidToken
 	}
 
