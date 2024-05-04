@@ -10,10 +10,13 @@ jobs:
     runs-on: ubuntu-latest
    
     steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.CONFIG_ROLE }}
+          role-to-assume: arn:aws:iam::058264293850:user/github-ci
           aws-region: eu-north-1
 
       - name: Login to Amazon ECR
