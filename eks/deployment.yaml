@@ -12,10 +12,11 @@ spec:
   template:
     metadata:
       labels:
-        app:  swift-bank-api
+        app: git swift-bank-api
     spec:
       containers:
       - name:  swift-bank-api
         image: 058264293850.dkr.ecr.eu-north-1.amazonaws.com/swiftbank:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
