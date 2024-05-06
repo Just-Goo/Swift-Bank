@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: swift-bank-api-service
+spec:
+  selector:
+    app: swift-bank-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: ClusterIP

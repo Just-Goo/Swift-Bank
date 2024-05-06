@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: swift-bank-api-deployment
+  labels:
+    app: swift-bank-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app:  swift-bank-api
+  template:
+    metadata:
+      labels:
+        app:  swift-bank-api
+    spec:
+      containers:
+      - name:  swift-bank-api
+        image: 058264293850.dkr.ecr.eu-north-1.amazonaws.com/swiftbank:latest
+        ports:
+        - containerPort: 8080
