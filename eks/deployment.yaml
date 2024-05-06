@@ -12,7 +12,7 @@ spec:
   template:
     metadata:
       labels:
-        app:  swift-bank-api
+        app: git swift-bank-api
     spec:
       containers:
       - name:  swift-bank-api
