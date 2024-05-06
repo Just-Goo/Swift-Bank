@@ -41,8 +41,11 @@ jobs:
           REPOSITORY: swiftbank
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t latest .
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest .
           docker push -a $REGISTRY/$REPOSITORY    
+
+      - name : Update kube config
+        run: aws eks update-kubeconfig --name swift-bank --region eu-north-1
 
       - name: Deploy image to Amazon EKS
         run: |
