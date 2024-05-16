@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Just-Goo/Swift_Bank/config"
-	"github.com/Just-Goo/Swift_Bank/helpers"
-	"github.com/Just-Goo/Swift_Bank/models"
-	"github.com/Just-Goo/Swift_Bank/service"
-	"github.com/Just-Goo/Swift_Bank/token"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/zde37/Swift_Bank/config"
+	"github.com/zde37/Swift_Bank/helpers"
+	"github.com/zde37/Swift_Bank/models"
+	"github.com/zde37/Swift_Bank/service"
+	"github.com/zde37/Swift_Bank/token"
 )
 
 type handlerImpl struct {
@@ -317,7 +317,7 @@ func (h *handlerImpl) TransferMoney(ctx *gin.Context) {
 		return
 	}
 
-	// check if sender has enough money 
+	// check if sender has enough money
 	if fromAccount.Balance < req.Amount {
 		err := errors.New("sender does not have sufficient funds to transfer")
 		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))

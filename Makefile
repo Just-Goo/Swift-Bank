@@ -29,9 +29,9 @@ run:
 	go run main.go
 
 mockrepo:
-	mockgen -package mockedproviders -destination mock/repository_provider.go github.com/Just-Goo/Swift_Bank/repository RepositoryProvider
+	mockgen -package mockedproviders -destination mock/repository_provider.go github.com/zde37/Swift_Bank/repository RepositoryProvider
 
 mockservice:
-	mockgen -package mockedproviders -destination mock/service_provider.go github.com/Just-Goo/Swift_Bank/service ServiceProvider
+	mockgen -package mockedproviders -destination mock/service_provider.go github.com/zde37/Swift_Bank/service ServiceProvider
 
 .PHONY: postgres16 createdb dropdb migrateup migrateup1 migratedown migratedown1 test run createmigration mockrepo mockservice

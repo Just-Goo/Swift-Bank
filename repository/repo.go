@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 
-	"github.com/Just-Goo/Swift_Bank/models"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/zde37/Swift_Bank/models"
 )
 
 type RepositoryProvider interface {

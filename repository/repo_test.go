@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Just-Goo/Swift_Bank/helpers"
-	"github.com/Just-Goo/Swift_Bank/models"
 	"github.com/stretchr/testify/require"
+	"github.com/zde37/Swift_Bank/helpers"
+	"github.com/zde37/Swift_Bank/models"
 )
 
 func createRandomAccount(t *testing.T) models.Account {

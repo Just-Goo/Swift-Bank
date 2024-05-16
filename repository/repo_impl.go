@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Just-Goo/Swift_Bank/models"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/zde37/Swift_Bank/models"
 )
 
 type repositoryImpl struct {
@@ -69,7 +69,7 @@ func (r *repositoryImpl) GetAccountForUpdate(ctx context.Context, id int64) (mod
 func (r *repositoryImpl) ListAccounts(ctx context.Context, name string, limit, offset int32) ([]models.Account, error) {
 	query := `SELECT id, owner, balance, currency, created_at FROM accounts WHERE owner = @name ORDER BY id LIMIT @limit OFFSET @offset`
 	args := pgx.NamedArgs{
-		"name":  name,
+		"name":   name,
 		"limit":  limit,
 		"offset": offset,
 	}
@@ -89,7 +89,7 @@ func (r *repositoryImpl) ListAccounts(ctx context.Context, name string, limit, o
 		}
 		accounts = append(accounts, account)
 	}
- 
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

@@ -1,10 +1,10 @@
 package api
 
 import (
-	"github.com/Just-Goo/Swift_Bank/config"
-	"github.com/Just-Goo/Swift_Bank/service"
-	"github.com/Just-Goo/Swift_Bank/token"
 	"github.com/gin-gonic/gin"
+	"github.com/zde37/Swift_Bank/config"
+	"github.com/zde37/Swift_Bank/service"
+	"github.com/zde37/Swift_Bank/token"
 )
 
 type HandlerProvider interface {

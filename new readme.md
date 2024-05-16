@@ -8,10 +8,10 @@
     <em><code>► INSERT-TEXT-HERE</code></em>
 </p>
 <p align="center">
-	<img src="https://img.shields.io/github/license/Just-Goo/Swift-Bank?style=default&logo=opensourceinitiative&logoColor=white&color=0080ff" alt="license">
-	<img src="https://img.shields.io/github/last-commit/Just-Goo/Swift-Bank?style=default&logo=git&logoColor=white&color=0080ff" alt="last-commit">
-	<img src="https://img.shields.io/github/languages/top/Just-Goo/Swift-Bank?style=default&color=0080ff" alt="repo-top-language">
-	<img src="https://img.shields.io/github/languages/count/Just-Goo/Swift-Bank?style=default&color=0080ff" alt="repo-language-count">
+	<img src="https://img.shields.io/github/license/zde37/Swift-Bank?style=default&logo=opensourceinitiative&logoColor=white&color=0080ff" alt="license">
+	<img src="https://img.shields.io/github/last-commit/zde37/Swift-Bank?style=default&logo=git&logoColor=white&color=0080ff" alt="last-commit">
+	<img src="https://img.shields.io/github/languages/top/zde37/Swift-Bank?style=default&color=0080ff" alt="repo-top-language">
+	<img src="https://img.shields.io/github/languages/count/zde37/Swift-Bank?style=default&color=0080ff" alt="repo-language-count">
 <p>
 <p align="center">
 	<!-- default option, no dependency badges. -->
@@ -107,10 +107,10 @@
 
 | File                                                                    | Summary                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | ---                                                                     | ---                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| [go.sum](https://github.com/Just-Goo/Swift-Bank/blob/master/go.sum)     | This code file in the Swift-Bank repository plays a critical role in configuring the application settings and overall behavior. By managing the application configuration, it ensures that the software operates effectively and can be tailored to suit different environments or use cases. This file contributes to the seamless execution and adaptability of the Swift-Bank application within its larger architecture. |
-| [main.go](https://github.com/Just-Goo/Swift-Bank/blob/master/main.go)   | Initiates server setup by loading configuration, connecting to the database, creating repository and service instances, and starting the server with handlers, leveraging the repository architecture of the parent Swift-Bank repository.                                                                                                                                                                                   |
-| [go.mod](https://github.com/Just-Goo/Swift-Bank/blob/master/go.mod)     | Improve repository dependency management by defining required packages and their versions in go.mod. Ensure the project uses specific versions to maintain stability and compatibility with external dependencies.                                                                                                                                                                                                           |
-| [Makefile](https://github.com/Just-Goo/Swift-Bank/blob/master/Makefile) | <code>► INSERT-TEXT-HERE</code>                                                                                                                                                                                                                                                                                                                                                                                              |
+| [go.sum](https://github.com/zde37/Swift-Bank/blob/master/go.sum)     | This code file in the Swift-Bank repository plays a critical role in configuring the application settings and overall behavior. By managing the application configuration, it ensures that the software operates effectively and can be tailored to suit different environments or use cases. This file contributes to the seamless execution and adaptability of the Swift-Bank application within its larger architecture. |
+| [main.go](https://github.com/zde37/Swift-Bank/blob/master/main.go)   | Initiates server setup by loading configuration, connecting to the database, creating repository and service instances, and starting the server with handlers, leveraging the repository architecture of the parent Swift-Bank repository.                                                                                                                                                                                   |
+| [go.mod](https://github.com/zde37/Swift-Bank/blob/master/go.mod)     | Improve repository dependency management by defining required packages and their versions in go.mod. Ensure the project uses specific versions to maintain stability and compatibility with external dependencies.                                                                                                                                                                                                           |
+| [Makefile](https://github.com/zde37/Swift-Bank/blob/master/Makefile) | <code>► INSERT-TEXT-HERE</code>                                                                                                                                                                                                                                                                                                                                                                                              |
 
 </details>
 
@@ -118,8 +118,8 @@
 
 | File                                                                                 | Summary                         |
 | ---                                                                                  | ---                             |
-| [entities.go](https://github.com/Just-Goo/Swift-Bank/blob/master/models/entities.go) | <code>► INSERT-TEXT-HERE</code> |
-| [requests.go](https://github.com/Just-Goo/Swift-Bank/blob/master/models/requests.go) | <code>► INSERT-TEXT-HERE</code> |
+| [entities.go](https://github.com/zde37/Swift-Bank/blob/master/models/entities.go) | <code>► INSERT-TEXT-HERE</code> |
+| [requests.go](https://github.com/zde37/Swift-Bank/blob/master/models/requests.go) | <code>► INSERT-TEXT-HERE</code> |
 
 </details>
 
@@ -127,7 +127,7 @@
 
 | File                                                                                   | Summary                         |
 | ---                                                                                    | ---                             |
-| [database.go](https://github.com/Just-Goo/Swift-Bank/blob/master/database/database.go) | <code>► INSERT-TEXT-HERE</code> |
+| [database.go](https://github.com/zde37/Swift-Bank/blob/master/database/database.go) | <code>► INSERT-TEXT-HERE</code> |
 
 </details>
 
@@ -135,8 +135,8 @@
 
 | File                                                                                                                              | Summary                         |
 | ---                                                                                                                               | ---                             |
-| [000001_init_schema.down.sql](https://github.com/Just-Goo/Swift-Bank/blob/master/database/migrations/000001_init_schema.down.sql) | <code>► INSERT-TEXT-HERE</code> |
-| [000001_init_schema.up.sql](https://github.com/Just-Goo/Swift-Bank/blob/master/database/migrations/000001_init_schema.up.sql)     | <code>► INSERT-TEXT-HERE</code> |
+| [000001_init_schema.down.sql](https://github.com/zde37/Swift-Bank/blob/master/database/migrations/000001_init_schema.down.sql) | <code>► INSERT-TEXT-HERE</code> |
+| [000001_init_schema.up.sql](https://github.com/zde37/Swift-Bank/blob/master/database/migrations/000001_init_schema.up.sql)     | <code>► INSERT-TEXT-HERE</code> |
 
 </details>
 
@@ -144,10 +144,10 @@
 
 | File                                                                                                 | Summary                         |
 | ---                                                                                                  | ---                             |
-| [repo_main_test.go](https://github.com/Just-Goo/Swift-Bank/blob/master/repository/repo_main_test.go) | <code>► INSERT-TEXT-HERE</code> |
-| [repo_test.go](https://github.com/Just-Goo/Swift-Bank/blob/master/repository/repo_test.go)           | <code>► INSERT-TEXT-HERE</code> |
-| [repo_impl.go](https://github.com/Just-Goo/Swift-Bank/blob/master/repository/repo_impl.go)           | <code>► INSERT-TEXT-HERE</code> |
-| [repo.go](https://github.com/Just-Goo/Swift-Bank/blob/master/repository/repo.go)                     | <code>► INSERT-TEXT-HERE</code> |
+| [repo_main_test.go](https://github.com/zde37/Swift-Bank/blob/master/repository/repo_main_test.go) | <code>► INSERT-TEXT-HERE</code> |
+| [repo_test.go](https://github.com/zde37/Swift-Bank/blob/master/repository/repo_test.go)           | <code>► INSERT-TEXT-HERE</code> |
+| [repo_impl.go](https://github.com/zde37/Swift-Bank/blob/master/repository/repo_impl.go)           | <code>► INSERT-TEXT-HERE</code> |
+| [repo.go](https://github.com/zde37/Swift-Bank/blob/master/repository/repo.go)                     | <code>► INSERT-TEXT-HERE</code> |
 
 </details>
 
@@ -155,7 +155,7 @@
 
 | File                                                                                  | Summary                         |
 | ---                                                                                   | ---                             |
-| [ci.yml](https://github.com/Just-Goo/Swift-Bank/blob/master/.github/workflows/ci.yml) | <code>► INSERT-TEXT-HERE</code> |
+| [ci.yml](https://github.com/zde37/Swift-Bank/blob/master/.github/workflows/ci.yml) | <code>► INSERT-TEXT-HERE</code> |
 
 </details>
 
@@ -163,8 +163,8 @@
 
 | File                                                                                       | Summary                         |
 | ---                                                                                        | ---                             |
-| [application.go](https://github.com/Just-Goo/Swift-Bank/blob/master/config/application.go) | <code>► INSERT-TEXT-HERE</code> |
-| [config.go](https://github.com/Just-Goo/Swift-Bank/blob/master/config/config.go)           | <code>► INSERT-TEXT-HERE</code> |
+| [application.go](https://github.com/zde37/Swift-Bank/blob/master/config/application.go) | <code>► INSERT-TEXT-HERE</code> |
+| [config.go](https://github.com/zde37/Swift-Bank/blob/master/config/config.go)           | <code>► INSERT-TEXT-HERE</code> |
 
 </details>
 
@@ -172,8 +172,8 @@
 
 | File                                                                                                     | Summary                         |
 | ---                                                                                                      | ---                             |
-| [service_provider.go](https://github.com/Just-Goo/Swift-Bank/blob/master/mock/service_provider.go)       | <code>► INSERT-TEXT-HERE</code> |
-| [repository_provider.go](https://github.com/Just-Goo/Swift-Bank/blob/master/mock/repository_provider.go) | <code>► INSERT-TEXT-HERE</code> |
+| [service_provider.go](https://github.com/zde37/Swift-Bank/blob/master/mock/service_provider.go)       | <code>► INSERT-TEXT-HERE</code> |
+| [repository_provider.go](https://github.com/zde37/Swift-Bank/blob/master/mock/repository_provider.go) | <code>► INSERT-TEXT-HERE</code> |
 
 </details>
 
@@ -181,10 +181,10 @@
 
 | File                                                                                                               | Summary                         |
 | ---                                                                                                                | ---                             |
-| [handler.go](https://github.com/Just-Goo/Swift-Bank/blob/master/controller/handler/handler.go)                     | <code>► INSERT-TEXT-HERE</code> |
-| [handler_test.go](https://github.com/Just-Goo/Swift-Bank/blob/master/controller/handler/handler_test.go)           | <code>► INSERT-TEXT-HERE</code> |
-| [handler_main_test.go](https://github.com/Just-Goo/Swift-Bank/blob/master/controller/handler/handler_main_test.go) | <code>► INSERT-TEXT-HERE</code> |
-| [handler_impl.go](https://github.com/Just-Goo/Swift-Bank/blob/master/controller/handler/handler_impl.go)           | <code>► INSERT-TEXT-HERE</code> |
+| [handler.go](https://github.com/zde37/Swift-Bank/blob/master/controller/handler/handler.go)                     | <code>► INSERT-TEXT-HERE</code> |
+| [handler_test.go](https://github.com/zde37/Swift-Bank/blob/master/controller/handler/handler_test.go)           | <code>► INSERT-TEXT-HERE</code> |
+| [handler_main_test.go](https://github.com/zde37/Swift-Bank/blob/master/controller/handler/handler_main_test.go) | <code>► INSERT-TEXT-HERE</code> |
+| [handler_impl.go](https://github.com/zde37/Swift-Bank/blob/master/controller/handler/handler_impl.go)           | <code>► INSERT-TEXT-HERE</code> |
 
 </details>
 
@@ -192,7 +192,7 @@
 
 | File                                                                                       | Summary                         |
 | ---                                                                                        | ---                             |
-| [jwt.go](https://github.com/Just-Goo/Swift-Bank/blob/master/controller/middlewares/jwt.go) | <code>► INSERT-TEXT-HERE</code> |
+| [jwt.go](https://github.com/zde37/Swift-Bank/blob/master/controller/middlewares/jwt.go) | <code>► INSERT-TEXT-HERE</code> |
 
 </details>
 
@@ -200,9 +200,9 @@
 
 | File                                                                                          | Summary                         |
 | ---                                                                                           | ---                             |
-| [service_impl.go](https://github.com/Just-Goo/Swift-Bank/blob/master/service/service_impl.go) | <code>► INSERT-TEXT-HERE</code> |
-| [service.go](https://github.com/Just-Goo/Swift-Bank/blob/master/service/service.go)           | <code>► INSERT-TEXT-HERE</code> |
-| [service_test.go](https://github.com/Just-Goo/Swift-Bank/blob/master/service/service_test.go) | <code>► INSERT-TEXT-HERE</code> |
+| [service_impl.go](https://github.com/zde37/Swift-Bank/blob/master/service/service_impl.go) | <code>► INSERT-TEXT-HERE</code> |
+| [service.go](https://github.com/zde37/Swift-Bank/blob/master/service/service.go)           | <code>► INSERT-TEXT-HERE</code> |
+| [service_test.go](https://github.com/zde37/Swift-Bank/blob/master/service/service_test.go) | <code>► INSERT-TEXT-HERE</code> |
 
 </details>
 
@@ -210,8 +210,8 @@
 
 | File                                                                                | Summary                         |
 | ---                                                                                 | ---                             |
-| [helpers.go](https://github.com/Just-Goo/Swift-Bank/blob/master/helpers/helpers.go) | <code>► INSERT-TEXT-HERE</code> |
-| [random.go](https://github.com/Just-Goo/Swift-Bank/blob/master/helpers/random.go)   | <code>► INSERT-TEXT-HERE</code> |
+| [helpers.go](https://github.com/zde37/Swift-Bank/blob/master/helpers/helpers.go) | <code>► INSERT-TEXT-HERE</code> |
+| [random.go](https://github.com/zde37/Swift-Bank/blob/master/helpers/random.go)   | <code>► INSERT-TEXT-HERE</code> |
 
 </details>
 
@@ -230,7 +230,7 @@
 > 1. Clone the Swift-Bank repository:
 >
 > ```console
-> $ git clone https://github.com/Just-Goo/Swift-Bank
+> $ git clone https://github.com/zde37/Swift-Bank
 > ```
 >
 > 2. Change to the project directory:
@@ -273,9 +273,9 @@
 
 Contributions are welcome! Here are several ways you can contribute:
 
-- **[Report Issues](https://github.com/Just-Goo/Swift-Bank/issues)**: Submit bugs found or log feature requests for the `Swift-Bank` project.
-- **[Submit Pull Requests](https://github.com/Just-Goo/Swift-Bank/blob/main/CONTRIBUTING.md)**: Review open PRs, and submit your own PRs.
-- **[Join the Discussions](https://github.com/Just-Goo/Swift-Bank/discussions)**: Share your insights, provide feedback, or ask questions.
+- **[Report Issues](https://github.com/zde37/Swift-Bank/issues)**: Submit bugs found or log feature requests for the `Swift-Bank` project.
+- **[Submit Pull Requests](https://github.com/zde37/Swift-Bank/blob/main/CONTRIBUTING.md)**: Review open PRs, and submit your own PRs.
+- **[Join the Discussions](https://github.com/zde37/Swift-Bank/discussions)**: Share your insights, provide feedback, or ask questions.
 
 <details closed>
 <summary>Contributing Guidelines</summary>
@@ -283,7 +283,7 @@ Contributions are welcome! Here are several ways you can contribute:
 1. **Fork the Repository**: Start by forking the project repository to your github account.
 2. **Clone Locally**: Clone the forked repository to your local machine using a git client.
    ```sh
-   git clone https://github.com/Just-Goo/Swift-Bank
+   git clone https://github.com/zde37/Swift-Bank
    ```
 3. **Create a New Branch**: Always work on a new branch, giving it a descriptive name.
    ```sh
@@ -306,8 +306,8 @@ Contributions are welcome! Here are several ways you can contribute:
 <summary>Contributor Graph</summary>
 <br>
 <p align="center">
-   <a href="https://github.com{/Just-Goo/Swift-Bank/}graphs/contributors">
-      <img src="https://contrib.rocks/image?repo=Just-Goo/Swift-Bank">
+   <a href="https://github.com{/zde37/Swift-Bank/}graphs/contributors">
+      <img src="https://contrib.rocks/image?repo=zde37/Swift-Bank">
    </a>
 </p>
 </details>

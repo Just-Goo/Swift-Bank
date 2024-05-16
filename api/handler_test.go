@@ -11,14 +11,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Just-Goo/Swift_Bank/helpers"
-	mockedproviders "github.com/Just-Goo/Swift_Bank/mock"
-	"github.com/Just-Goo/Swift_Bank/models"
-	"github.com/Just-Goo/Swift_Bank/token"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/require"
+	"github.com/zde37/Swift_Bank/helpers"
+	mockedproviders "github.com/zde37/Swift_Bank/mock"
+	"github.com/zde37/Swift_Bank/models"
+	"github.com/zde37/Swift_Bank/token"
 	"go.uber.org/mock/gomock"
 )
 

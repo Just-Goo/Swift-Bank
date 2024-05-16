@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 
-	"github.com/Just-Goo/Swift_Bank/helpers"
-	"github.com/Just-Goo/Swift_Bank/models"
-	"github.com/Just-Goo/Swift_Bank/repository"
+	"github.com/zde37/Swift_Bank/helpers"
+	"github.com/zde37/Swift_Bank/models"
+	"github.com/zde37/Swift_Bank/repository"
 )
 
 type serviceImpl struct {

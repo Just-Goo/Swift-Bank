@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Just-Goo/Swift_Bank/helpers"
-	mockedproviders "github.com/Just-Goo/Swift_Bank/mock"
-	"github.com/Just-Goo/Swift_Bank/models"
 	"github.com/stretchr/testify/require"
+	"github.com/zde37/Swift_Bank/helpers"
+	mockedproviders "github.com/zde37/Swift_Bank/mock"
+	"github.com/zde37/Swift_Bank/models"
 	"go.uber.org/mock/gomock"
 )
 

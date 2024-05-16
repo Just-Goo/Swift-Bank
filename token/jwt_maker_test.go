@@ -4,12 +4,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Just-Goo/Swift_Bank/helpers"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/stretchr/testify/require"
+	"github.com/zde37/Swift_Bank/helpers"
 )
 
-func TestJWTMaker(t *testing.T)  {
+func TestJWTMaker(t *testing.T) {
 	maker, err := NewJWTMaker(helpers.RandomString(32))
 	require.NoError(t, err)
 
@@ -23,7 +23,7 @@ func TestJWTMaker(t *testing.T)  {
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 
-	payload, err := maker.VerifyToken(token) 
+	payload, err := maker.VerifyToken(token)
 	require.NoError(t, err)
 	require.NotEmpty(t, payload)
 
@@ -34,7 +34,7 @@ func TestJWTMaker(t *testing.T)  {
 
 }
 
-func TestExpiredJWTToken(t *testing.T)  {
+func TestExpiredJWTToken(t *testing.T) {
 	maker, err := NewJWTMaker(helpers.RandomString(32))
 	require.NoError(t, err)
 
@@ -47,7 +47,7 @@ func TestExpiredJWTToken(t *testing.T)  {
 	require.Nil(t, payload)
 }
 
-func TestInvalidJWTTokenAlgNone(t *testing.T)  {
+func TestInvalidJWTTokenAlgNone(t *testing.T) {
 	payload, err := NewPayload(helpers.RandomOwner(), time.Minute)
 	require.NoError(t, err)
 
