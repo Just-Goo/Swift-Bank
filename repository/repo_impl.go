@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Just-Goo/Swift_Bank/models"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/zde37/Swift_Bank/models"
 )
 
 type repositoryImpl struct {

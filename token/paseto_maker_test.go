@@ -4,11 +4,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Just-Goo/Swift_Bank/helpers"
 	"github.com/stretchr/testify/require"
+	"github.com/zde37/Swift_Bank/helpers"
 )
 
-func TestPasetoMaker(t *testing.T)  {
+func TestPasetoMaker(t *testing.T) {
 	maker, err := NewPastoMaker(helpers.RandomString(32))
 	require.NoError(t, err)
 
@@ -33,7 +33,7 @@ func TestPasetoMaker(t *testing.T)  {
 	require.WithinDuration(t, expiredAt, payload.ExpiredAt, time.Second)
 }
 
-func TestExpiredPasetoToken(t *testing.T)  {
+func TestExpiredPasetoToken(t *testing.T) {
 	maker, err := NewPastoMaker(helpers.RandomString(32))
 	require.NoError(t, err)
 

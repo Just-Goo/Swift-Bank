@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 
-	"github.com/Just-Goo/Swift_Bank/models"
-	"github.com/Just-Goo/Swift_Bank/repository"
 	"github.com/google/uuid"
+	"github.com/zde37/Swift_Bank/models"
+	"github.com/zde37/Swift_Bank/repository"
 )
 
 type ServiceProvider interface {
@@ -29,7 +29,6 @@ type ServiceProvider interface {
 	ListUsers(ctx context.Context, limit, offset int32) ([]models.User, error)
 	NewSession(ctx context.Context, session models.Session) (models.Session, error)
 	FetchSession(ctx context.Context, id uuid.UUID) (models.Session, error)
-	
 }
 
 type Service struct {

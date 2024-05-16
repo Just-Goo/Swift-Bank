@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	mockedproviders "github.com/Just-Goo/Swift_Bank/mock"
-	"github.com/Just-Goo/Swift_Bank/token"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
+	mockedproviders "github.com/zde37/Swift_Bank/mock"
+	"github.com/zde37/Swift_Bank/token"
 	"go.uber.org/mock/gomock"
 )
 
@@ -27,7 +27,7 @@ func addAuthorization(
 	require.NotEmpty(t, payload)
 
 	authorizationHeader := fmt.Sprintf("%s %s", authorizationType, token)
-	request.Header.Set(authorizationHeaderKey, authorizationHeader) 
+	request.Header.Set(authorizationHeaderKey, authorizationHeader)
 }
 
 func TestAuthMiddleware(t *testing.T) {

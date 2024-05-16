@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Just-Goo/Swift_Bank/database" 
+	"github.com/zde37/Swift_Bank/database"
 )
 
 var testRepo *Repository
