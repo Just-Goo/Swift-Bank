@@ -1,0 +1,56 @@
+Project first_project {
+  database_type: 'PostgreSQL'
+  Note: '''
+    # Swift Bank Database 
+  '''
+}
+
+Table users as U {
+  username varchar [pk]
+  hashed_password varchar [not null]
+  full_name varchar [not null]
+  email varchar [unique, not null]
+  password_changed_at timestamptz [not null, default: '0001-01-01 00:00:00Z']
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table accounts as A {
+  id bigint [pk]
+  owner varchar [ref: > U.username, not null]
+  balance float [not null]
+  currency varchar [not null]
+  created_at timestamptz [not null, default: `now()`]
+
+  Indexes {
+    owner
+    (owner, currency) [unique]
+  }
+}
+
+Table entries {
+  id bigint [pk]
+  account_id bigint [ref: > A.id]
+  amount float [not null, note: 'can be negative or positive']
+  created_at timestamptz [not null, default: `now()`]
+
+  Indexes {
+    account_id
+  }
+}
+
+Table transactions {
+  id bigint [pk]
+  amount float [not null, note: 'must be positive']
+  fee float [not null]
+  currency varchar [not null]
+  description varchar 
+  to_account_id bigint [ref: > A.id]
+  from_account_id bigint [ref: > A.id]
+  created_at timestamptz [default: `now()`]
+
+  Indexes {
+    from_account_id
+    to_account_id
+    (from_account_id, to_account_id)
+  }
+}

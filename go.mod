@@ -1,4 +1,4 @@
-module github.com/Just-Goo/Swift_Bank
+module github.com/zde37/Swift_Bank
 
 go 1.21.5
 

@@ -5,6 +5,7 @@ import (
 
 	"github.com/Just-Goo/Swift_Bank/models"
 	"github.com/Just-Goo/Swift_Bank/repository"
+	"github.com/google/uuid"
 )
 
 type ServiceProvider interface {
@@ -26,6 +27,8 @@ type ServiceProvider interface {
 	LoginUser(ctx context.Context, data models.LoginUserRequest) (models.User, error)
 	GetUser(ctx context.Context, username string) (models.User, error)
 	ListUsers(ctx context.Context, limit, offset int32) ([]models.User, error)
+	NewSession(ctx context.Context, session models.Session) (models.Session, error)
+	FetchSession(ctx context.Context, id uuid.UUID) (models.Session, error)
 	
 }
 

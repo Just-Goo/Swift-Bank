@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/Just-Goo/Swift_Bank/models"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -69,7 +70,7 @@ func (r *repositoryImpl) GetAccountForUpdate(ctx context.Context, id int64) (mod
 func (r *repositoryImpl) ListAccounts(ctx context.Context, name string, limit, offset int32) ([]models.Account, error) {
 	query := `SELECT id, owner, balance, currency, created_at FROM accounts WHERE owner = @name ORDER BY id LIMIT @limit OFFSET @offset`
 	args := pgx.NamedArgs{
-		"name":  name,
+		"name":   name,
 		"limit":  limit,
 		"offset": offset,
 	}
@@ -89,7 +90,7 @@ func (r *repositoryImpl) ListAccounts(ctx context.Context, name string, limit, o
 		}
 		accounts = append(accounts, account)
 	}
- 
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -275,6 +276,44 @@ func (r *repositoryImpl) ListTransactions(ctx context.Context, fromAccountID, to
 	}
 
 	return transactions, nil
+}
+
+func (r *repositoryImpl) CreateSession(ctx context.Context, session models.Session) (models.Session, error) {
+	query := `INSERT INTO sessions (id, username, refresh_token, user_agent, client_ip, is_blocked, expires_at) VALUES
+			  (@id, @userName, @token, @userAgent, @clientIp, @isBlocked, @expiresAt) RETURNING id, username, refresh_token,
+			  user_agent, client_ip, is_blocked, expires_at, created_at`
+	args := pgx.NamedArgs{
+		"id":        session.ID,
+		"userName":  session.UserName,
+		"token":     session.RefreshToken,
+		"userAgent": session.UserAgent,
+		"clientIp":  session.ClientIp,
+		"isBlocked": session.IsBlocked,
+		"expiresAt": session.ExpiresAt,
+	}
+
+	var s models.Session
+	err := r.pool.QueryRow(ctx, query, args).Scan(&s.ID, &s.UserName, &s.RefreshToken, &s.UserAgent, &s.ClientIp, &s.IsBlocked, &s.ExpiresAt, &s.CreatedAt)
+	if err != nil {
+		return s, err
+	}
+
+	return s, nil
+}
+
+func (r *repositoryImpl) GetSession(ctx context.Context, id uuid.UUID) (models.Session, error) {
+	var s models.Session
+	query := `SELECT id, username, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at FROM sessions WHERE id = @id`
+	args := pgx.NamedArgs{
+		"id": id,
+	}
+
+	err := r.pool.QueryRow(ctx, query, args).Scan(&s.ID, &s.UserName, &s.RefreshToken, &s.UserAgent, &s.ClientIp, &s.IsBlocked, &s.ExpiresAt, &s.CreatedAt)
+	if err != nil {
+		return s, err
+	}
+
+	return s, nil
 }
 
 func (r *repositoryImpl) CreateUser(ctx context.Context, user models.User) (models.User, error) {

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Just-Goo/Swift_Bank/models"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -25,6 +26,8 @@ type RepositoryProvider interface {
 	CreateUser(ctx context.Context, user models.User) (models.User, error)
 	GetUser(ctx context.Context, userName string) (models.User, error)
 	ListUsers(ctx context.Context, limit, offset int32) ([]models.User, error)
+	CreateSession(ctx context.Context, session models.Session) (models.Session, error)
+	GetSession(ctx context.Context, id uuid.UUID) (models.Session, error)
 }
 
 type Repository struct {

@@ -4,12 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
-	"github.com/Just-Goo/Swift_Bank/config"
-	"github.com/Just-Goo/Swift_Bank/helpers"
-	"github.com/Just-Goo/Swift_Bank/models"
-	"github.com/Just-Goo/Swift_Bank/service"
-	"github.com/Just-Goo/Swift_Bank/token"
+	"github.com/zde37/Swift_Bank/config"
+	"github.com/zde37/Swift_Bank/helpers"
+	"github.com/zde37/Swift_Bank/models"
+	"github.com/zde37/Swift_Bank/service"
+	"github.com/zde37/Swift_Bank/token"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
@@ -82,6 +83,7 @@ func (h *handlerImpl) registerRoutes() {
 
 		v1.POST("/user", h.CreateUser)
 		v1.POST("/users/login", h.LoginUser)
+		v1.POST("/tokens/renew_access", h.RenewAccessToken)
 
 		authRoutes := v1.Group("/").Use(auth(h.tokenMaker))
 
@@ -256,15 +258,39 @@ func (h *handlerImpl) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, err := h.tokenMaker.CreateToken(req.UserName, h.config.AccessTokenDuration)
+	accessToken, accessPayload, err := h.tokenMaker.CreateToken(req.UserName, h.config.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
+		return
+	}
+
+	refreshToken, refreshpayload, err := h.tokenMaker.CreateToken(req.UserName, h.config.RefreshTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
+		return
+	}
+
+	session, err := h.service.NewSession(ctx, models.Session{
+		ID:           refreshpayload.ID,
+		UserName:     req.UserName,
+		UserAgent:    ctx.Request.UserAgent(),
+		ClientIp:     ctx.ClientIP(),
+		RefreshToken: refreshToken,
+		IsBlocked:    false,
+		ExpiresAt:    refreshpayload.ExpiredAt,
+	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
 		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
-		"access_token": accessToken,
-		"user":         user,
+		"session_id":               session.ID,
+		"access_token":             accessToken,
+		"access_token_expires_at":  accessPayload.ExpiredAt,
+		"refresh_token":            refreshToken,
+		"refresh_token_expires_at": refreshpayload.ExpiredAt,
+		"user":                     user,
 	})
 }
 
@@ -304,6 +330,62 @@ func (h *handlerImpl) ListUsers(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, users)
 }
 
+func (h *handlerImpl) RenewAccessToken(ctx *gin.Context) {
+	var req models.RenewAccessTokenRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
+		return
+	}
+
+	refreshPayload, err := h.tokenMaker.VerifyToken(req.RefreshToken)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, h.errorResponse(err))
+		return
+	}
+
+	session, err := h.service.FetchSession(ctx, refreshPayload.ID)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			ctx.JSON(http.StatusNotFound, h.errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
+		return
+	}
+
+	if session.IsBlocked {
+		ctx.JSON(http.StatusUnauthorized, h.errorResponse(fmt.Errorf("blocked session")))
+		return
+	}
+
+	if session.UserName != refreshPayload.UserName {
+		ctx.JSON(http.StatusUnauthorized, h.errorResponse(fmt.Errorf("incorrect session user")))
+		return
+	}
+
+	if session.RefreshToken != req.RefreshToken {
+		ctx.JSON(http.StatusUnauthorized, h.errorResponse(fmt.Errorf("mismatched session token")))
+		return
+	}
+
+	if time.Now().After(session.ExpiresAt) { // if token is expired
+		ctx.JSON(http.StatusUnauthorized, h.errorResponse(fmt.Errorf("expired session")))
+		return
+	}
+
+	accessToken, accessPayload, err := h.tokenMaker.CreateToken(refreshPayload.UserName, h.config.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"access_token":            accessToken,
+		"access_token_expires_at": accessPayload.ExpiredAt,
+	})
+}
+
 func (h *handlerImpl) TransferMoney(ctx *gin.Context) {
 	var req models.TransferMoneyRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -317,7 +399,7 @@ func (h *handlerImpl) TransferMoney(ctx *gin.Context) {
 		return
 	}
 
-	// check if sender has enough money 
+	// check if sender has enough money
 	if fromAccount.Balance < req.Amount {
 		err := errors.New("sender does not have sufficient funds to transfer")
 		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))

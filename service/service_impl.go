@@ -6,6 +6,7 @@ import (
 	"github.com/Just-Goo/Swift_Bank/helpers"
 	"github.com/Just-Goo/Swift_Bank/models"
 	"github.com/Just-Goo/Swift_Bank/repository"
+	"github.com/google/uuid"
 )
 
 type serviceImpl struct {
@@ -69,6 +70,14 @@ func (s *serviceImpl) GetEntry(ctx context.Context, id int64) (models.Entry, err
 func (s *serviceImpl) ListEntries(ctx context.Context, accountID, limit, offset int64) ([]models.Entry, error) {
 
 	return nil, nil
+}
+
+func (s *serviceImpl) NewSession(ctx context.Context, session models.Session) (models.Session, error) {
+	return s.repo.CreateSession(ctx, session)
+}
+
+func (s *serviceImpl) FetchSession(ctx context.Context, id uuid.UUID) (models.Session, error) {
+	return s.repo.GetSession(ctx, id)
 }
 
 func (s *serviceImpl) CreateTransaction(ctx context.Context, transaction models.Transaction) (models.Transaction, error) {

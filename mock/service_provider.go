@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	models "github.com/Just-Goo/Swift_Bank/models"
+	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -127,6 +128,21 @@ func (m *MockServiceProvider) DeleteAccount(arg0 context.Context, arg1 int64) er
 func (mr *MockServiceProviderMockRecorder) DeleteAccount(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAccount", reflect.TypeOf((*MockServiceProvider)(nil).DeleteAccount), arg0, arg1)
+}
+
+// FetchSession mocks base method.
+func (m *MockServiceProvider) FetchSession(arg0 context.Context, arg1 uuid.UUID) (models.Session, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FetchSession", arg0, arg1)
+	ret0, _ := ret[0].(models.Session)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FetchSession indicates an expected call of FetchSession.
+func (mr *MockServiceProviderMockRecorder) FetchSession(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchSession", reflect.TypeOf((*MockServiceProvider)(nil).FetchSession), arg0, arg1)
 }
 
 // GetAccount mocks base method.
@@ -277,6 +293,21 @@ func (m *MockServiceProvider) LoginUser(arg0 context.Context, arg1 models.LoginU
 func (mr *MockServiceProviderMockRecorder) LoginUser(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoginUser", reflect.TypeOf((*MockServiceProvider)(nil).LoginUser), arg0, arg1)
+}
+
+// NewSession mocks base method.
+func (m *MockServiceProvider) NewSession(arg0 context.Context, arg1 models.Session) (models.Session, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewSession", arg0, arg1)
+	ret0, _ := ret[0].(models.Session)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NewSession indicates an expected call of NewSession.
+func (mr *MockServiceProviderMockRecorder) NewSession(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewSession", reflect.TypeOf((*MockServiceProvider)(nil).NewSession), arg0, arg1)
 }
 
 // TransferTx mocks base method.
