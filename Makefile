@@ -34,4 +34,12 @@ mockrepo:
 mockservice:
 	mockgen -package mockedproviders -destination mock/service_provider.go github.com/zde37/Swift_Bank/service ServiceProvider
 
-.PHONY: postgres16 createdb dropdb migrateup migrateup1 migratedown migratedown1 test run createmigration mockrepo mockservice
+GO_MODULE := github.com/zde37/Swift_Bank
+
+proto:
+	rm -f pb/*.go
+	protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative \
+	--go-grpc_out=pb --go-grpc_opt=paths=source_relative \
+	./proto/*.proto
+
+.PHONY: postgres16 createdb dropdb migrateup migrateup1 migratedown migratedown1 test run createmigration mockrepo mockservice proto

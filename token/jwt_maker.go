@@ -2,7 +2,7 @@ package token
 
 import (
 	"errors"
-	"fmt" 
+	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -21,20 +21,22 @@ func NewJWTMaker(secretKey string) (Maker, error) {
 	return &JWTMaker{secretKey: secretKey}, nil
 }
 
-func (j *JWTMaker) CreateToken(username string, duration time.Duration) (string, error) {
+func (j *JWTMaker) CreateToken(username string, duration time.Duration) (string, *Payload, error) {
 	payload, err := NewPayload(username, duration)
 	if err != nil {
-		return "", err
+		return "", payload, err
 	}
 
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
-	return jwtToken.SignedString([]byte(j.secretKey))
+	token, err := jwtToken.SignedString([]byte(j.secretKey))
+
+	return token, payload, err
 }
 
 func (j *JWTMaker) VerifyToken(token string) (*Payload, error) {
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
-		if !ok { 
+		if !ok {
 			return nil, ErrInvalidToken
 		}
 		return []byte(j.secretKey), nil
@@ -45,12 +47,12 @@ func (j *JWTMaker) VerifyToken(token string) (*Payload, error) {
 		verr, ok := err.(*jwt.ValidationError)
 		if ok && errors.Is(verr.Inner, ErrExpiredToken) {
 			return nil, ErrExpiredToken
-		} 
+		}
 		return nil, ErrInvalidToken
 	}
 
 	payload, ok := jwtToken.Claims.(*Payload)
-	if !ok { 
+	if !ok {
 		return nil, ErrInvalidToken
 	}
 

@@ -1,6 +1,6 @@
 package models
 
-type CreateAccountRequest struct { 
+type CreateAccountRequest struct {
 	Currency string `json:"currency" binding:"required,currency"`
 }
 
@@ -26,7 +26,11 @@ type CreateUserRequest struct {
 
 type LoginUserRequest struct {
 	UserName string `json:"username" binding:"required,alphanum"`
-	Password string `json:"password" binding:"required,min=6"` 
+	Password string `json:"password" binding:"required,min=6"`
+}
+
+type RenewAccessTokenRequest struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
 type GetUserRequest struct {

@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Account struct {
 	ID        int64     `json:"id"`
@@ -28,13 +32,23 @@ type Transaction struct {
 	CreatedAt     time.Time `json:"created_at"`
 }
 
-type User struct { 
+type User struct {
 	UserName          string    `json:"username"`
 	HashedPassword    string    `json:"-"`
 	FullName          string    `json:"full_name"`
 	Email             string    `json:"email"`
 	PasswordChangedAt time.Time `json:"password_changed_at"`
 	CreatedAt         time.Time `json:"created_at"`
+}
+type Session struct {
+	ID           uuid.UUID `json:"id"`
+	UserName     string    `json:"username"`
+	RefreshToken string    `json:"refresh_token"`
+	UserAgent    string    `json:"user_agent"`
+	ClientIp     string    `json:"client_ip"`
+	IsBlocked    bool      `json:"is_blocked"`
+	ExpiresAt    time.Time `json:"expires_at"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 type TransferTxParams struct {

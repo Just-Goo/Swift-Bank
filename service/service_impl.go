@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/zde37/Swift_Bank/helpers"
 	"github.com/zde37/Swift_Bank/models"
 	"github.com/zde37/Swift_Bank/repository"
@@ -83,6 +84,14 @@ func (s *serviceImpl) GetTransaction(ctx context.Context, id int64) (models.Tran
 func (s *serviceImpl) ListTransactions(ctx context.Context, fromAccountID, toAccountID, limit, offset int64) ([]models.Transaction, error) {
 
 	return nil, nil
+}
+
+func (s *serviceImpl) NewSession(ctx context.Context, data models.Session) (models.Session, error) {
+	return s.repo.CreateSession(ctx, data)
+}
+
+func (s *serviceImpl) FetchSession(ctx context.Context, id uuid.UUID) (models.Session, error) {
+	return s.repo.GetSession(ctx, id)
 }
 
 func (s *serviceImpl) CreateUser(ctx context.Context, data models.CreateUserRequest) (models.User, error) {
