@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -82,6 +83,7 @@ func (h *handlerImpl) registerRoutes() {
 
 		v1.POST("/user", h.CreateUser)
 		v1.POST("/users/login", h.LoginUser)
+		v1.POST("/tokens/renew_access", h.RenewAccessToken)
 
 		authRoutes := v1.Group("/").Use(auth(h.tokenMaker))
 
@@ -256,15 +258,98 @@ func (h *handlerImpl) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, err := h.tokenMaker.CreateToken(req.UserName, h.config.AccessTokenDuration)
+	accessToken, accessTokenPayload, err := h.tokenMaker.CreateToken(req.UserName, h.config.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
+		return
+	}
+
+	refreshToken, refreshTokenPayload, err := h.tokenMaker.CreateToken(req.UserName, h.config.RefreshTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
+		return
+	}
+
+	session, err := h.service.NewSession(ctx, models.Session{
+		ID:           refreshTokenPayload.ID,
+		UserName:     req.UserName,
+		RefreshToken: refreshToken,
+		UserAgent:    ctx.Request.UserAgent(),
+		ClientIp:     ctx.ClientIP(),
+		IsBlocked:    false,
+		ExpiresAt:    refreshTokenPayload.ExpiredAt,
+	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
 		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
-		"access_token": accessToken,
-		"user":         user,
+		"session_id":               session.ID,
+		"access_token":             accessToken,
+		"access_token_expires_at":  accessTokenPayload.ExpiredAt,
+		"refresh_token":            refreshToken,
+		"refresh_token_expires_at": refreshTokenPayload.ExpiredAt,
+		"user":                     user,
+	})
+}
+
+func (h *handlerImpl) RenewAccessToken(ctx *gin.Context) {
+	var req models.RenewAccessTokenRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
+		return
+	}
+
+	refreshTokenPayload, err := h.tokenMaker.VerifyToken(req.RefreshToken)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, h.errorResponse(err))
+		return
+	}
+
+	session, err := h.service.FetchSession(ctx, refreshTokenPayload.ID)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			ctx.JSON(http.StatusNotFound, h.errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
+		return
+	}
+
+	if session.IsBlocked {
+		ctx.JSON(http.StatusUnauthorized, h.errorResponse(fmt.Errorf("blocked session")))
+		return
+	}
+
+	if session.UserName != refreshTokenPayload.UserName {
+		ctx.JSON(http.StatusUnauthorized, h.errorResponse(fmt.Errorf("incorrect session user")))
+		return
+	}
+
+	if session.RefreshToken != req.RefreshToken {
+		ctx.JSON(http.StatusUnauthorized, h.errorResponse(fmt.Errorf("mismatched session token")))
+		return
+	}
+
+	if time.Now().After(session.ExpiresAt) {
+		ctx.JSON(http.StatusUnauthorized, h.errorResponse(fmt.Errorf("expired session")))
+		return
+	}
+
+	accessToken, accessTokenPayload, err := h.tokenMaker.CreateToken(
+		refreshTokenPayload.UserName,
+		h.config.AccessTokenDuration,
+	)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"access_token":            accessToken,
+		"access_token_expires_at": accessTokenPayload.ExpiredAt,
 	})
 }
 

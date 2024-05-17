@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/zde37/Swift_Bank/models"
@@ -143,6 +144,44 @@ func (r *repositoryImpl) DeleteAccount(ctx context.Context, id int64) error {
 	}
 
 	return nil
+}
+
+func (r *repositoryImpl) CreateSession(ctx context.Context, session models.Session) (models.Session, error) {
+	query := `INSERT INTO sessions (id, username, refresh_token, user_agent, client_ip, is_blocked, expires_at) VALUES
+			  (@id, @username, @token, @userAgent, @clientIP, @isBlocked, @expiresAt) RETURNING id, username, refresh_token, 
+			  user_agent, client_ip, is_blocked, expires_at, created_at`
+	args := pgx.NamedArgs{
+		"id":        session.ID,
+		"username":  session.UserName,
+		"token":     session.RefreshToken,
+		"userAgent": session.UserAgent,
+		"clientIP":  session.ClientIp,
+		"isBlocked": session.IsBlocked,
+		"expiresAt": session.ExpiresAt,
+	}
+
+	var s models.Session
+	err := r.pool.QueryRow(ctx, query, args).Scan(&s.ID, &s.UserName, &s.RefreshToken, &s.UserAgent, &s.ClientIp, &s.IsBlocked, &s.ExpiresAt, &s.CreatedAt)
+	if err != nil {
+		return s, err
+	}
+
+	return s, nil
+}
+
+func (r *repositoryImpl) GetSession(ctx context.Context, id uuid.UUID) (models.Session, error) {
+	var s models.Session
+	query := `SELECT id, username, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at FROM sessions WHERE id = @id`
+	args := pgx.NamedArgs{
+		"id": id,
+	}
+
+	err := r.pool.QueryRow(ctx, query, args).Scan(&s.ID, &s.UserName, &s.RefreshToken, &s.UserAgent, &s.ClientIp, &s.IsBlocked, &s.ExpiresAt, &s.CreatedAt)
+	if err != nil {
+		return s, err
+	}
+
+	return s, nil
 }
 
 func (r *repositoryImpl) CreateEntry(ctx context.Context, entry models.Entry) (models.Entry, error) {

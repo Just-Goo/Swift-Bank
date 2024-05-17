@@ -13,6 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	uuid "github.com/google/uuid"
 	models "github.com/zde37/Swift_Bank/models"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -83,6 +84,21 @@ func (m *MockRepositoryProvider) CreateEntry(arg0 context.Context, arg1 models.E
 func (mr *MockRepositoryProviderMockRecorder) CreateEntry(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEntry", reflect.TypeOf((*MockRepositoryProvider)(nil).CreateEntry), arg0, arg1)
+}
+
+// CreateSession mocks base method.
+func (m *MockRepositoryProvider) CreateSession(arg0 context.Context, arg1 models.Session) (models.Session, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateSession", arg0, arg1)
+	ret0, _ := ret[0].(models.Session)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateSession indicates an expected call of CreateSession.
+func (mr *MockRepositoryProviderMockRecorder) CreateSession(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSession", reflect.TypeOf((*MockRepositoryProvider)(nil).CreateSession), arg0, arg1)
 }
 
 // CreateTransaction mocks base method.
@@ -172,6 +188,21 @@ func (m *MockRepositoryProvider) GetEntry(arg0 context.Context, arg1 int64) (mod
 func (mr *MockRepositoryProviderMockRecorder) GetEntry(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEntry", reflect.TypeOf((*MockRepositoryProvider)(nil).GetEntry), arg0, arg1)
+}
+
+// GetSession mocks base method.
+func (m *MockRepositoryProvider) GetSession(arg0 context.Context, arg1 uuid.UUID) (models.Session, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSession", arg0, arg1)
+	ret0, _ := ret[0].(models.Session)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSession indicates an expected call of GetSession.
+func (mr *MockRepositoryProviderMockRecorder) GetSession(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSession", reflect.TypeOf((*MockRepositoryProvider)(nil).GetSession), arg0, arg1)
 }
 
 // GetTransaction mocks base method.
