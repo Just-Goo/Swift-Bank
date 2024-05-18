@@ -38,8 +38,16 @@ GO_MODULE := github.com/zde37/Swift_Bank
 
 proto:
 	rm -f pb/*.go
+	rm -f doc/swagger/*.swagger.json
 	protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative \
 	--go-grpc_out=pb --go-grpc_opt=paths=source_relative \
-	./proto/*.proto
+	--grpc-gateway_out=pb --grpc-gateway_opt=paths=source_relative \
+	--openapiv2_out=doc/swagger --openapiv2_opt=allow_merge=true,merge_file_name=swift_bank \
+	./proto/*.proto 
+	statik -src=./doc/swagger -dest=./doc
 
-.PHONY: postgres16 createdb dropdb migrateup migrateup1 migratedown migratedown1 test run createmigration mockrepo mockservice proto
+
+evans:
+	evans --host localhost --port 9090 -r repl
+
+.PHONY: postgres16 createdb dropdb migrateup migrateup1 migratedown migratedown1 test run createmigration mockrepo mockservice proto evans

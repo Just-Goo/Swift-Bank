@@ -4,8 +4,12 @@ import (
 	"context"
 	"log"
 	"net"
+	"net/http"
 
+	_ "github.com/zde37/Swift_Bank/doc/statik"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/rakyll/statik/fs"
 	"github.com/zde37/Swift_Bank/api"
 	"github.com/zde37/Swift_Bank/config"
 	"github.com/zde37/Swift_Bank/database"
@@ -15,6 +19,7 @@ import (
 	"github.com/zde37/Swift_Bank/service"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func main() {
@@ -39,12 +44,13 @@ func main() {
 
 	defer pool.Close()
 
-	// runGrpcServer(config, pool)
+	go runGatewayServer(config, pool)
+	runGrpcServer(config, pool)
 
-	runGinServer(config, pool)
+	// runGinServer(config, pool)
 }
 
-func runGrpcServer(config config.Config, pool *pgxpool.Pool) {	
+func runGrpcServer(config config.Config, pool *pgxpool.Pool) {
 	repository := repository.NewRepository(pool)
 	service := service.NewService(repository.R)
 	server, err := gapi.NewServer(config, service.S)
@@ -65,6 +71,56 @@ func runGrpcServer(config config.Config, pool *pgxpool.Pool) {
 	log.Printf("start gRPC server at: %s", listener.Addr().String())
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatal("cannot start gRPC server:", err)
+	}
+}
+
+func runGatewayServer(config config.Config, pool *pgxpool.Pool) {
+	repository := repository.NewRepository(pool)
+	service := service.NewService(repository.R)
+	server, err := gapi.NewServer(config, service.S)
+	if err != nil {
+		log.Fatal("cannot create server:", err)
+	}
+
+	// set json response to use snake case
+	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+		MarshalOptions: protojson.MarshalOptions{
+			UseProtoNames: true,
+		},
+		UnmarshalOptions: protojson.UnmarshalOptions{
+			DiscardUnknown: true,
+		},
+	})
+	grpcMux := runtime.NewServeMux(jsonOption)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if err := pb.RegisterSwiftBankHandlerServer(ctx, grpcMux, server); err != nil {
+		log.Fatal("cannot register handler server", err)
+	}
+
+	mux := http.NewServeMux()
+	mux.Handle("/", grpcMux)
+
+	// serve swagger file with statik
+	statikFs, err := fs.New()
+	if err != nil {
+		log.Fatal("cannot create statik fs:", err)
+	}
+
+	swaggerHandler := http.StripPrefix("/swagger/", http.FileServer(statikFs))
+	mux.Handle("/swagger/", swaggerHandler)
+
+	// create a new listener
+	listener, err := net.Listen("tcp", config.HttpServerAddress)
+	if err != nil {
+		log.Fatal("cannot create listener:", err)
+	}
+
+	log.Printf("start HTTP gateway server at: %s", listener.Addr().String())
+	if err := http.Serve(listener, mux); err != nil {
+		log.Fatal("cannot start HTTP gateway server:", err)
 	}
 }
 
