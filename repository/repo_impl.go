@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"fmt"
+	"fmt" 
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -377,6 +377,29 @@ func (r *repositoryImpl) ListUsers(ctx context.Context, limit, offset int32) ([]
 	}
 
 	return users, nil
+}
+
+func (r *repositoryImpl) UpdateUser(ctx context.Context, user models.UpdateUserParams) (models.User, error) {
+	var u models.User
+	query := `UPDATE users SET full_name = COALESCE(@newFullName, full_name),
+			  hashed_password = COALESCE(@newPassword, hashed_password),
+			  password_changed_at = COALESCE(@newPasswordChangedTime, password_changed_at),
+			  email = COALESCE(@newEmail, email) WHERE username = @username  RETURNING 
+			  username, hashed_password, full_name, email, password_changed_at, created_at` 
+	args := pgx.NamedArgs{
+		"username":               user.UserName,
+		"newFullName":            user.FullName,
+		"newPassword":            user.HashedPassword,
+		"newPasswordChangedTime": user.PasswordChangedAt,
+		"newEmail":               user.Email,
+	}
+
+	err := r.pool.QueryRow(ctx, query, args).Scan(&u.UserName, &u.HashedPassword, &u.FullName, &u.Email, &u.PasswordChangedAt, &u.CreatedAt)
+	if err != nil {
+		return u, err
+	}
+
+	return u, nil
 }
 
 func (r *repositoryImpl) execTx(ctx context.Context, fn func(pgx.Tx) error) error {

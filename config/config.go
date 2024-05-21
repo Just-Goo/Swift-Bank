@@ -15,6 +15,8 @@ type Config struct {
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
 	JwtSecretKey         string        `mapstructure:"JWT_SECRET_KEY"`
 	RefreshJwtSecretKey  string        `mapstructure:"REFRESH_JWT_SECRET_KEY"`
+	MigrationURL         string        `mapstructure:"MIGRATION_URL"`
+	Environment          string        `mapstructure:"ENVIRONMENT"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

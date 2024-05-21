@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package pb;
+
+import "user.proto";
+
+option go_package = "github.com/zde37/Swift_Bank/pb";
+
+message UpdateUserRequest {
+  string username = 1;
+  
+  optional string password = 16;
+  optional string full_name = 17;
+  optional string email = 18;
+}
+
+message UpdateUserResponse {
+  User user = 1;
+}

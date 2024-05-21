@@ -117,6 +117,10 @@ func (s *serviceImpl) LoginUser(ctx context.Context, data models.LoginUserReques
 	return user, nil
 }
 
+func (s *serviceImpl) UpdateUser(ctx context.Context, user models.UpdateUserParams) (models.User, error) {
+	return s.repo.UpdateUser(ctx, user)
+}
+
 func (s *serviceImpl) GetUser(ctx context.Context, username string) (models.User, error) {
 	return s.repo.GetUser(ctx, username)
 }

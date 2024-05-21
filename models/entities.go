@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -40,6 +41,15 @@ type User struct {
 	PasswordChangedAt time.Time `json:"password_changed_at"`
 	CreatedAt         time.Time `json:"created_at"`
 }
+
+type UpdateUserParams struct {
+	UserName          string         `json:"username"`
+	HashedPassword    sql.NullString `json:"-"`
+	FullName          sql.NullString `json:"full_name"`
+	Email             sql.NullString `json:"email"`
+	PasswordChangedAt sql.NullTime   `json:"password_changed_at"`
+}
+
 type Session struct {
 	ID           uuid.UUID `json:"id"`
 	UserName     string    `json:"username"`
