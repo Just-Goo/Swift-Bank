@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"testing"
 	"time"
@@ -142,6 +143,108 @@ func TestGetUser(t *testing.T) {
 	require.Equal(t, user1.Email, user2.Email)
 	require.WithinDuration(t, user1.PasswordChangedAt, user2.PasswordChangedAt, time.Second)
 	require.WithinDuration(t, user1.CreatedAt, user2.CreatedAt, time.Second)
+}
+
+func TestUpdateUserFullName(t *testing.T) {
+	user1 := createRandomUser(t)
+
+	newFullName := helpers.RandomOwner()
+
+	updatedUser, err := testRepo.R.UpdateUser(context.Background(), models.UpdateUserParams{
+		UserName: user1.UserName,
+		FullName: sql.NullString{
+			String: newFullName,
+			Valid:  true,
+		},
+	})
+
+	require.NoError(t, err)
+	require.NotEmpty(t, updatedUser)
+
+	require.NotEqual(t, user1.FullName, updatedUser.FullName)
+	require.Equal(t, newFullName, updatedUser.FullName)
+	require.Equal(t, user1.Email, updatedUser.Email)
+	require.Equal(t, user1.HashedPassword, updatedUser.HashedPassword)
+}
+
+func TestUpdateUserEmail(t *testing.T) {
+	user1 := createRandomUser(t)
+
+	newEmail := helpers.RandomEmail()
+
+	updatedUser, err := testRepo.R.UpdateUser(context.Background(), models.UpdateUserParams{
+		UserName: user1.UserName,
+		Email: sql.NullString{
+			String: newEmail,
+			Valid:  true,
+		},
+	})
+
+	require.NoError(t, err)
+	require.NotEmpty(t, updatedUser)
+
+	require.NotEqual(t, user1.Email, updatedUser.Email)
+	require.Equal(t, newEmail, updatedUser.Email)
+	require.Equal(t, user1.FullName, updatedUser.FullName)
+	require.Equal(t, user1.HashedPassword, updatedUser.HashedPassword)
+}
+
+func TestUpdateUserPassword(t *testing.T) {
+	user1 := createRandomUser(t)
+
+	newPassword, err := helpers.HashPassword(helpers.RandomString(10))
+	require.NoError(t, err)
+
+	updatedUser, err := testRepo.R.UpdateUser(context.Background(), models.UpdateUserParams{
+		UserName: user1.UserName,
+		HashedPassword: sql.NullString{
+			String: newPassword,
+			Valid:  true,
+		},
+	})
+
+	require.NoError(t, err)
+	require.NotEmpty(t, updatedUser)
+
+	require.NotEqual(t, user1.HashedPassword, updatedUser.HashedPassword)
+	require.Equal(t, newPassword, updatedUser.HashedPassword)
+	require.Equal(t, user1.FullName, updatedUser.FullName)
+	require.Equal(t, user1.Email, updatedUser.Email)
+}
+
+func TestUpdateAllUserDetails(t *testing.T) {
+	user1 := createRandomUser(t)
+
+	newFullName := helpers.RandomOwner()
+	newEmail := helpers.RandomEmail()
+	newPassword, err := helpers.HashPassword(helpers.RandomString(10))
+	require.NoError(t, err)
+
+	updatedUser, err := testRepo.R.UpdateUser(context.Background(), models.UpdateUserParams{
+		UserName: user1.UserName,
+		HashedPassword: sql.NullString{
+			String: newPassword,
+			Valid:  true,
+		},
+		FullName: sql.NullString{
+			String: newFullName,
+			Valid:  true,
+		},
+		Email: sql.NullString{
+			String: newEmail,
+			Valid:  true,
+		},
+	})
+
+	require.NoError(t, err)
+	require.NotEmpty(t, updatedUser)
+
+	require.NotEqual(t, user1.FullName, updatedUser.FullName)
+	require.NotEqual(t, user1.Email, updatedUser.Email)
+	require.NotEqual(t, user1.HashedPassword, updatedUser.HashedPassword)
+	require.Equal(t, newFullName, updatedUser.FullName)
+	require.Equal(t, newEmail, updatedUser.Email)
+	require.Equal(t, newPassword, updatedUser.HashedPassword)
 }
 
 func TestListUsers(t *testing.T) {

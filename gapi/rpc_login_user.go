@@ -29,7 +29,7 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 			return nil, status.Errorf(codes.Internal, "a db error occurred: %s", err)
 
 		}
-		return nil, status.Errorf(codes.Internal, "failed to login user: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "failed to login user: %s", err)
 	}
 
 	accessToken, accessTokenPayload, err := server.tokenMaker.CreateToken(req.GetUsername(), server.config.AccessTokenDuration)
