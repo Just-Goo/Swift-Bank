@@ -3,12 +3,15 @@ package gapi
 import (
 	"context"
 	"errors"
+	"time"
 
+	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/zde37/Swift_Bank/helpers"
 	"github.com/zde37/Swift_Bank/models"
 	"github.com/zde37/Swift_Bank/pb"
 	"github.com/zde37/Swift_Bank/val"
+	"github.com/zde37/Swift_Bank/worker"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -24,12 +27,26 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 		return nil, status.Errorf(codes.Internal, "failed to hash password: %s", err)
 	}
 
-	createdUser, err := server.service.CreateUser(ctx, models.CreateUserRequest{
-		UserName: req.GetUsername(),
-		Password: hashedPassword,
-		FullName: req.GetFullName(),
-		Email:    req.GetEmail(),
+	createdUser, err := server.service.CreateUserTx(ctx, models.CreateUserTxParams{
+		User: models.User{
+			UserName:       req.GetUsername(),
+			HashedPassword: hashedPassword,
+			FullName:       req.GetFullName(),
+			Email:          req.GetEmail(),
+		},
+		AfterCreate: func(user models.User) error {
+			taskPayload := &worker.PayloadSendVerifyEmail{
+				Username: user.UserName,
+			}
+			opts := []asynq.Option{
+				asynq.MaxRetry(10),
+				asynq.ProcessIn(10 * time.Second), // 10 seconds delay
+				asynq.Queue(worker.QueueCritical),
+			}
+			return server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
+		},
 	})
+	
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {

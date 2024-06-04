@@ -42,6 +42,11 @@ type User struct {
 	CreatedAt         time.Time `json:"created_at"`
 }
 
+type CreateUserTxParams struct {
+	User
+	AfterCreate func(user User) error
+}
+
 type UpdateUserParams struct {
 	UserName          string         `json:"username"`
 	HashedPassword    sql.NullString `json:"-"`

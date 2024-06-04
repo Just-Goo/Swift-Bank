@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 	// if err != nil {
 	// 	log.Fatal("failed to load config: ", err)
 	// }
-	dsn := "postgresql://root:swiftsecret@localhost:5432/Swift_Bank_DB?sslmode=disable"
+	dsn := "postgresql://root:4713a4cd628778cd1c37a95518f3eaf3@localhost:5432/Swift_Bank_DB?sslmode=disable"
 	postgresClient := database.PostgresClient{}
 	db, err := postgresClient.NewPostgresClient(ctx, dsn)
 	if err != nil {

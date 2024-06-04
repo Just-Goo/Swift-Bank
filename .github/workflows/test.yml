@@ -15,7 +15,7 @@ jobs:
         image: postgres:16
         env:
           POSTGRES_USER: root
-          POSTGRES_PASSWORD: swiftsecret
+          POSTGRES_PASSWORD: 4713a4cd628778cd1c37a95518f3eaf3
           POSTGRES_DB: Swift_Bank_DB
         # Set health checks to wait until postgres has started
         options: >-
@@ -28,10 +28,10 @@ jobs:
           - 5432:5432
 
     steps:
-      - name: Set up Go 1.21.5
+      - name: Set up Go 1.22.2
         uses: actions/setup-go@v3
         with:
-          go-version: ^1.21.5
+          go-version: ^1.22.2
         id: go
 
       - name: Check out code into the Go module directory
