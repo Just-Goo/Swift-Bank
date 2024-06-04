@@ -15,7 +15,7 @@ jobs:
         image: postgres:16
         env:
           POSTGRES_USER: root
-          POSTGRES_PASSWORD: swiftsecret
+          POSTGRES_PASSWORD: 4713a4cd628778cd1c37a95518f3eaf3
           POSTGRES_DB: Swift_Bank_DB
         # Set health checks to wait until postgres has started
         options: >-
