@@ -23,6 +23,7 @@ type RepositoryProvider interface {
 	GetTransaction(ctx context.Context, id int64) (models.Transaction, error)
 	ListTransactions(ctx context.Context, fromAccountID, toAccountID, limit, offset int64) ([]models.Transaction, error)
 	TransferTx(ctx context.Context, arg models.TransferTxParams) (models.TransferTxResult, error)
+	CreateUserTx(ctx context.Context, data models.CreateUserTxParams) (models.User, error)
 	CreateUser(ctx context.Context, user models.User) (models.User, error)
 	GetUser(ctx context.Context, userName string) (models.User, error)
 	UpdateUser(ctx context.Context, user models.UpdateUserParams) (models.User, error)

@@ -1,29 +1,29 @@
-postgres16:
-	docker run --name postgres16 --network bank-network -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=swiftsecret -d postgres:16-alpine
+postgres:
+	docker run --name postgres --network bank-network -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=4713a4cd628778cd1c37a95518f3eaf3 -d postgres:16-alpine
 
 createdb:
-	docker exec -it postgres16 createdb --username=root --owner=root Swift_Bank_DB
+	docker exec -it postgres createdb --username=root --owner=root Swift_Bank_DB
 
 dropdb:
-	docker exec -it postgres16 dropdb Swift_Bank_DB
+	docker exec -it postgres dropdb Swift_Bank_DB
 
 createmigration:
 	migrate create -ext sql -dir database/migrations -seq init_schema
 
 migrateup:
-	migrate -path database/migrations -database "postgresql://root:swiftsecret@localhost:5432/Swift_Bank_DB?sslmode=disable" -verbose up
+	migrate -path database/migrations -database "postgresql://root:4713a4cd628778cd1c37a95518f3eaf3@localhost:5432/Swift_Bank_DB?sslmode=disable" -verbose up
 
 migrateup1:
-	migrate -path database/migrations -database "postgresql://root:swiftsecret@localhost:5432/Swift_Bank_DB?sslmode=disable" -verbose up 1
+	migrate -path database/migrations -database "postgresql://root:4713a4cd628778cd1c37a95518f3eaf3@localhost:5432/Swift_Bank_DB?sslmode=disable" -verbose up 1
 
 migratedown:
-	migrate -path database/migrations -database "postgresql://root:swiftsecret@localhost:5432/Swift_Bank_DB?sslmode=disable" -verbose down
+	migrate -path database/migrations -database "postgresql://root:4713a4cd628778cd1c37a95518f3eaf3@localhost:5432/Swift_Bank_DB?sslmode=disable" -verbose down
 
 migratedown1:
-	migrate -path database/migrations -database "postgresql://root:swiftsecret@localhost:5432/Swift_Bank_DB?sslmode=disable" -verbose down 1
+	migrate -path database/migrations -database "postgresql://root:4713a4cd628778cd1c37a95518f3eaf3@localhost:5432/Swift_Bank_DB?sslmode=disable" -verbose down 1
 
 test:
-	go clean -testcache && go test -v -cover ./...
+	go test -v -cover -short ./...
 
 run:
 	go run main.go
@@ -50,4 +50,7 @@ proto:
 evans:
 	evans --host localhost --port 9090 -r repl
 
-.PHONY: postgres16 createdb dropdb migrateup migrateup1 migratedown migratedown1 test run createmigration mockrepo mockservice proto evans
+redis:
+	docker run --name redis -p 6379:6379 -d redis:7.0-alpine
+
+.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown1 test run createmigration mockrepo mockservice proto evans redis

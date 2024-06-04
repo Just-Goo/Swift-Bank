@@ -94,6 +94,10 @@ func (s *serviceImpl) FetchSession(ctx context.Context, id uuid.UUID) (models.Se
 	return s.repo.GetSession(ctx, id)
 }
 
+func (s *serviceImpl) CreateUserTx(ctx context.Context, data models.CreateUserTxParams) (models.User, error) {
+	return s.repo.CreateUserTx(ctx, data)
+}
+
 func (s *serviceImpl) CreateUser(ctx context.Context, data models.CreateUserRequest) (models.User, error) {
 
 	arg := models.User{

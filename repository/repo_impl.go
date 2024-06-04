@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"fmt" 
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -385,7 +385,7 @@ func (r *repositoryImpl) UpdateUser(ctx context.Context, user models.UpdateUserP
 			  hashed_password = COALESCE(@newPassword, hashed_password),
 			  password_changed_at = COALESCE(@newPasswordChangedTime, password_changed_at),
 			  email = COALESCE(@newEmail, email) WHERE username = @username  RETURNING 
-			  username, hashed_password, full_name, email, password_changed_at, created_at` 
+			  username, hashed_password, full_name, email, password_changed_at, created_at`
 	args := pgx.NamedArgs{
 		"username":               user.UserName,
 		"newFullName":            user.FullName,
@@ -417,6 +417,32 @@ func (r *repositoryImpl) execTx(ctx context.Context, fn func(pgx.Tx) error) erro
 	}
 
 	return tx.Commit(ctx)
+}
+
+func (r *repositoryImpl) CreateUserTx(ctx context.Context, arg models.CreateUserTxParams) (models.User, error) {
+	var result models.User
+
+	err := r.execTx(ctx, func(tx pgx.Tx) error {
+		var err error
+
+		// create user
+		query := `INSERT INTO users (username, hashed_password, full_name, email) VALUES (@userName, @password, @fullName, @email) RETURNING username, hashed_password, full_name, email, password_changed_at, created_at`
+		args := pgx.NamedArgs{
+			"userName": arg.User.UserName,
+			"password": arg.User.HashedPassword,
+			"fullName": arg.User.FullName,
+			"email":    arg.User.Email,
+		}
+
+		err = tx.QueryRow(ctx, query, args).Scan(&result.UserName, &result.HashedPassword, &result.FullName, &result.Email, &result.PasswordChangedAt, &result.CreatedAt)
+		if err != nil {
+			return err
+		}
+
+		return arg.AfterCreate(result) // callback function
+	})
+
+	return result, err
 }
 
 func (r *repositoryImpl) TransferTx(ctx context.Context, arg models.TransferTxParams) (models.TransferTxResult, error) {

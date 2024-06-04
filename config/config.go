@@ -10,6 +10,7 @@ type Config struct {
 	Dsn                  string        `mapstructure:"DSN"`
 	HttpServerAddress    string        `mapstructure:"HTTP_SERVER_ADDRESS"`
 	GrpcServerAddress    string        `mapstructure:"GRPC_SERVER_ADDRESS"`
+	RedisAddress         string        `mapstructure:"REDIS_ADDRESS"`
 	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
@@ -17,6 +18,9 @@ type Config struct {
 	RefreshJwtSecretKey  string        `mapstructure:"REFRESH_JWT_SECRET_KEY"`
 	MigrationURL         string        `mapstructure:"MIGRATION_URL"`
 	Environment          string        `mapstructure:"ENVIRONMENT"`
+	EmailAddress         string        `mapstructure:"EMAIL_ADDRESS"`
+	EmailSender          string        `mapstructure:"EMAIL_SENDER"`
+	EmailPassword        string        `mapstructure:"EMAIL_PASSWORD"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
