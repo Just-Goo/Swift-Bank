@@ -11,7 +11,7 @@ createmigration:
 	migrate create -ext sql -dir database/migrations -seq init_schema
 
 migrateup:
-	migrate -path database/migrations -database "postgresql://root:4713a4cd628778cd1c37a95518f3eaf3@localhost:5432/Swift_Bank_DB?sslmode=disable" -verbose up
+	migrate -path database/migrations -database "postgresql://root:swiftsecret@localhost:5432/Swift_Bank_DB?sslmode=disable" -verbose up
 
 migrateup1:
 	migrate -path database/migrations -database "postgresql://root:4713a4cd628778cd1c37a95518f3eaf3@localhost:5432/Swift_Bank_DB?sslmode=disable" -verbose up 1
