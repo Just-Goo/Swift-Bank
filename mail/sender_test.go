@@ -21,7 +21,7 @@ func TestSendEmail(t *testing.T) {
 	<h1>Hello World</h1>
 	<p>This is a test message from <a href="https://github.com/zde37">ZDE</a></p>
 	`
-	to := []string{"zde373@gmail.com"}
+	to := []string{""} // provide an email address to send to
 	attachFiles := []string{"../README.md"}
 
 	err = sender.SendEmail(subject, content, to, nil, nil, attachFiles)
