@@ -8,7 +8,7 @@ dropdb:
 	docker exec -it postgres dropdb Swift_Bank_DB
 
 createmigration:
-	migrate create -ext sql -dir database/migrations -seq init_schema
+	migrate create -ext sql -dir database/migrations -seq $(name)
 
 migrateup:
 	migrate -path database/migrations -database "postgresql://root:4713a4cd628778cd1c37a95518f3eaf3@localhost:5432/Swift_Bank_DB?sslmode=disable" -verbose up

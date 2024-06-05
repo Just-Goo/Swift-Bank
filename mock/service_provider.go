@@ -131,6 +131,21 @@ func (mr *MockServiceProviderMockRecorder) CreateUserTx(arg0, arg1 any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserTx", reflect.TypeOf((*MockServiceProvider)(nil).CreateUserTx), arg0, arg1)
 }
 
+// CreateVerifyEmail mocks base method.
+func (m *MockServiceProvider) CreateVerifyEmail(arg0 context.Context, arg1 models.VerifyEmails) (models.VerifyEmails, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateVerifyEmail", arg0, arg1)
+	ret0, _ := ret[0].(models.VerifyEmails)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateVerifyEmail indicates an expected call of CreateVerifyEmail.
+func (mr *MockServiceProviderMockRecorder) CreateVerifyEmail(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVerifyEmail", reflect.TypeOf((*MockServiceProvider)(nil).CreateVerifyEmail), arg0, arg1)
+}
+
 // DeleteAccount mocks base method.
 func (m *MockServiceProvider) DeleteAccount(arg0 context.Context, arg1 int64) error {
 	m.ctrl.T.Helper()
@@ -368,4 +383,19 @@ func (m *MockServiceProvider) UpdateUser(arg0 context.Context, arg1 models.Updat
 func (mr *MockServiceProviderMockRecorder) UpdateUser(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockServiceProvider)(nil).UpdateUser), arg0, arg1)
+}
+
+// VerifyEmailTx mocks base method.
+func (m *MockServiceProvider) VerifyEmailTx(arg0 context.Context, arg1 models.VerifyEmailTxParams) (models.VerifyEmailTxResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VerifyEmailTx", arg0, arg1)
+	ret0, _ := ret[0].(models.VerifyEmailTxResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VerifyEmailTx indicates an expected call of VerifyEmailTx.
+func (mr *MockServiceProviderMockRecorder) VerifyEmailTx(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyEmailTx", reflect.TypeOf((*MockServiceProvider)(nil).VerifyEmailTx), arg0, arg1)
 }

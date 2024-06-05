@@ -22,6 +22,16 @@ type Entry struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type VerifyEmails struct {
+	ID         int64     `json:"id"`
+	Username   string    `json:"username"`
+	Email      string    `json:"email"`
+	SecretCode string    `json:"secret_code"`
+	IsUsed     bool      `json:"is_used"`
+	ExpiredAt  time.Time `json:"expired_at"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
 type Transaction struct {
 	ID            int64     `json:"id"`
 	FromAccountID int64     `json:"from_account_id"`
@@ -38,6 +48,7 @@ type User struct {
 	HashedPassword    string    `json:"-"`
 	FullName          string    `json:"full_name"`
 	Email             string    `json:"email"`
+	IsEmailVerified   bool      `json:"is_email_verified"`
 	PasswordChangedAt time.Time `json:"password_changed_at"`
 	CreatedAt         time.Time `json:"created_at"`
 }
@@ -47,11 +58,22 @@ type CreateUserTxParams struct {
 	AfterCreate func(user User) error
 }
 
+type VerifyEmailTxParams struct {
+	EmailId    int64
+	SecretCode string
+}
+
+type VerifyEmailTxResult struct {
+	User        User
+	VerifyEmail VerifyEmails
+}
+
 type UpdateUserParams struct {
 	UserName          string         `json:"username"`
 	HashedPassword    sql.NullString `json:"-"`
 	FullName          sql.NullString `json:"full_name"`
 	Email             sql.NullString `json:"email"`
+	IsEmailVerified   sql.NullBool   `json:"is_email_verified"`
 	PasswordChangedAt sql.NullTime   `json:"password_changed_at"`
 }
 

@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/hibiken/asynq" 
+	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog/log"
+	"github.com/zde37/Swift_Bank/helpers"
+	"github.com/zde37/Swift_Bank/models"
 )
 
 const TaskSendVerifyEmail = "task:send_verify_email"
@@ -50,12 +52,32 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 	user, err := processor.repo.GetUser(ctx, payload.Username)
 	if err != nil {
 		// if err == pgx.ErrNoRows {
-		// 	return fmt.Errorf("user doesn't exist: %w", asynq.SkipRetry) 
+		// 	return fmt.Errorf("user doesn't exist: %w", asynq.SkipRetry)
 		// }
 		return fmt.Errorf("failed to get user: %w", err)
 	}
 
-	// TODO: send email to user
+	verifyEmail, err := processor.repo.CreateVerifyEmail(ctx, models.VerifyEmails{
+		Username:   user.UserName,
+		Email:      user.Email,
+		SecretCode: helpers.RandomString(32),
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to create verify email: %w", err)
+	}
+
+	subject := "Welcome to Swift Bank"
+	verifyURL := fmt.Sprintf("http://localhost:8080/sb/api/v1/verify_email?email_id=%d&secret_code=%s", verifyEmail.ID, verifyEmail.SecretCode)
+	content := fmt.Sprintf(`Hello %s,<br/>
+	Thank you for registering with us!<br/>
+	Please <a href="%s">Click here</a> to verify your email address.<br/>`, user.FullName, verifyURL)
+	to := []string{user.Email}
+
+	if err = processor.mailer.SendEmail(subject, content, to, nil, nil, nil); err != nil {
+		return fmt.Errorf("failed to send verify email: %w", err)
+	}
+
 	log.Info().
 		Str("type", task.Type()).
 		Bytes("payload", task.Payload()).

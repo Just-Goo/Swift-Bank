@@ -7,6 +7,7 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 import "rpc_create_user.proto";
 import "rpc_login_user.proto";
 import "rpc_update_user.proto";
+import "rpc_verify_email.proto";
 
 option go_package = "github.com/zde37/Swift_Bank/pb";
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
@@ -41,6 +42,16 @@ service SwiftBank {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       description: "Use this API to login user and get access token and refresh token";
       summary: "Login user";
+    };
+  };
+
+  rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse) {
+    option (google.api.http) = {
+      get : "/sb/api/v1/verify_email" 
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      description: "Use this API to verify user's email address";
+      summary: "Verify email";
     };
   };
 
