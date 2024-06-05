@@ -20,6 +20,7 @@ import (
 	"github.com/zde37/Swift_Bank/database"
 	_ "github.com/zde37/Swift_Bank/doc/statik"
 	"github.com/zde37/Swift_Bank/gapi"
+	"github.com/zde37/Swift_Bank/mail"
 	"github.com/zde37/Swift_Bank/pb"
 	"github.com/zde37/Swift_Bank/repository"
 	"github.com/zde37/Swift_Bank/service"
@@ -65,7 +66,7 @@ func main() {
 
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
 
-	go runTaskProcessor(redisOpt, repository.R)
+	go runTaskProcessor(redisOpt, repository.R, config)
 	go runGatewayServer(config, service.S, taskDistributor)
 	runGrpcServer(config, service.S, taskDistributor)
 
@@ -85,8 +86,9 @@ func runDBMigration(migrationURL, dbSource string) {
 	log.Info().Msg("DB migrated successfully")
 }
 
-func runTaskProcessor(redisOpt asynq.RedisClientOpt, repo repository.RepositoryProvider)  {
-	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, repo)
+func runTaskProcessor(redisOpt asynq.RedisClientOpt, repo repository.RepositoryProvider, config config.Config)  {
+	mailer := mail.NewGmailSender(config.EmailSender, config.EmailAddress, config.EmailPassword)
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, repo, mailer)
 	log.Info().Msg("start task processor")
 	if err := taskProcessor.Start(); err != nil {
 		log.Fatal().Err(err).Msg("failed to start task processor")

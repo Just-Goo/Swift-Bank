@@ -318,7 +318,7 @@ func (r *repositoryImpl) ListTransactions(ctx context.Context, fromAccountID, to
 
 func (r *repositoryImpl) CreateUser(ctx context.Context, user models.User) (models.User, error) {
 	var u models.User
-	query := `INSERT INTO users (username, hashed_password, full_name, email) VALUES (@userName, @password, @fullName, @email) RETURNING username, hashed_password, full_name, email, password_changed_at, created_at`
+	query := `INSERT INTO users (username, hashed_password, full_name, email) VALUES (@userName, @password, @fullName, @email) RETURNING *`
 	args := pgx.NamedArgs{
 		"userName": user.UserName,
 		"password": user.HashedPassword,
@@ -326,7 +326,7 @@ func (r *repositoryImpl) CreateUser(ctx context.Context, user models.User) (mode
 		"email":    user.Email,
 	}
 
-	err := r.pool.QueryRow(ctx, query, args).Scan(&u.UserName, &u.HashedPassword, &u.FullName, &u.Email, &u.PasswordChangedAt, &u.CreatedAt)
+	err := r.pool.QueryRow(ctx, query, args).Scan(&u.UserName, &u.HashedPassword, &u.FullName, &u.Email, &u.PasswordChangedAt, &u.CreatedAt, &user.IsEmailVerified)
 	if err != nil {
 		return u, err
 	}
@@ -336,12 +336,12 @@ func (r *repositoryImpl) CreateUser(ctx context.Context, user models.User) (mode
 
 func (r *repositoryImpl) GetUser(ctx context.Context, username string) (models.User, error) {
 	var user models.User
-	query := `SELECT username, hashed_password, full_name, email, password_changed_at, created_at FROM users WHERE username = @username`
+	query := `SELECT  * FROM users WHERE username = @username`
 	args := pgx.NamedArgs{
 		"username": username,
 	}
 
-	err := r.pool.QueryRow(ctx, query, args).Scan(&user.UserName, &user.HashedPassword, &user.FullName, &user.Email, &user.PasswordChangedAt, &user.CreatedAt)
+	err := r.pool.QueryRow(ctx, query, args).Scan(&user.UserName, &user.HashedPassword, &user.FullName, &user.Email, &user.PasswordChangedAt, &user.CreatedAt, &user.IsEmailVerified)
 	if err != nil {
 		return user, err
 	}
@@ -350,7 +350,7 @@ func (r *repositoryImpl) GetUser(ctx context.Context, username string) (models.U
 }
 
 func (r *repositoryImpl) ListUsers(ctx context.Context, limit, offset int32) ([]models.User, error) {
-	query := `SELECT username, hashed_password, full_name, email, password_changed_at, created_at FROM users ORDER BY username LIMIT @limit OFFSET @offset`
+	query := `SELECT * FROM users ORDER BY username LIMIT @limit OFFSET @offset`
 	args := pgx.NamedArgs{
 		"limit":  limit,
 		"offset": offset,
@@ -366,7 +366,7 @@ func (r *repositoryImpl) ListUsers(ctx context.Context, limit, offset int32) ([]
 	users := []models.User{}
 	for rows.Next() {
 		var user models.User
-		if err := rows.Scan(&user.UserName, &user.HashedPassword, &user.FullName, &user.Email, &user.PasswordChangedAt, &user.CreatedAt); err != nil {
+		if err := rows.Scan(&user.UserName, &user.HashedPassword, &user.FullName, &user.Email, &user.PasswordChangedAt, &user.CreatedAt, &user.IsEmailVerified); err != nil {
 			return nil, err
 		}
 		users = append(users, user)
@@ -384,22 +384,40 @@ func (r *repositoryImpl) UpdateUser(ctx context.Context, user models.UpdateUserP
 	query := `UPDATE users SET full_name = COALESCE(@newFullName, full_name),
 			  hashed_password = COALESCE(@newPassword, hashed_password),
 			  password_changed_at = COALESCE(@newPasswordChangedTime, password_changed_at),
-			  email = COALESCE(@newEmail, email) WHERE username = @username  RETURNING 
-			  username, hashed_password, full_name, email, password_changed_at, created_at`
+			  is_email_verified = COALESCE(@emailVerified, is_email_verified),
+			  email = COALESCE(@newEmail, email) WHERE username = @username  RETURNING *`
 	args := pgx.NamedArgs{
 		"username":               user.UserName,
 		"newFullName":            user.FullName,
 		"newPassword":            user.HashedPassword,
 		"newPasswordChangedTime": user.PasswordChangedAt,
 		"newEmail":               user.Email,
+		"emailVerified":          user.IsEmailVerified,
 	}
 
-	err := r.pool.QueryRow(ctx, query, args).Scan(&u.UserName, &u.HashedPassword, &u.FullName, &u.Email, &u.PasswordChangedAt, &u.CreatedAt)
+	err := r.pool.QueryRow(ctx, query, args).Scan(&u.UserName, &u.HashedPassword, &u.FullName, &u.Email, &u.PasswordChangedAt, &u.CreatedAt, &user.IsEmailVerified)
 	if err != nil {
 		return u, err
 	}
 
 	return u, nil
+}
+
+func (r *repositoryImpl) CreateVerifyEmail(ctx context.Context, data models.VerifyEmails) (models.VerifyEmails, error) {
+	var e models.VerifyEmails
+	query := `INSERT INTO verify_emails (username, email, secret_code) VALUES (@userName, @email, @secretCode) RETURNING *`
+	args := pgx.NamedArgs{
+		"userName":   data.Username,
+		"secretCode": data.SecretCode,
+		"email":      data.Email,
+	}
+
+	err := r.pool.QueryRow(ctx, query, args).Scan(&e.ID, &e.Username, &e.Email, &e.SecretCode, &e.IsUsed, &e.CreatedAt, &e.ExpiredAt)
+	if err != nil {
+		return e, err
+	}
+
+	return e, nil
 }
 
 func (r *repositoryImpl) execTx(ctx context.Context, fn func(pgx.Tx) error) error {
@@ -419,6 +437,40 @@ func (r *repositoryImpl) execTx(ctx context.Context, fn func(pgx.Tx) error) erro
 	return tx.Commit(ctx)
 }
 
+func (r *repositoryImpl) VerifyEmailTx(ctx context.Context, arg models.VerifyEmailTxParams) (models.VerifyEmailTxResult, error) {
+	var result models.VerifyEmailTxResult
+
+	err := r.execTx(ctx, func(tx pgx.Tx) error {
+		var err error
+
+		// update verify emails table
+		query1 := `UPDATE verify_emails SET is_used = TRUE WHERE id = @id AND secret_code = @code AND is_used = FALSE AND expired_at > now() RETURNING *`
+		args1 := pgx.NamedArgs{
+			"id":   arg.EmailId,
+			"code": arg.SecretCode,
+		}
+
+		err = tx.QueryRow(ctx, query1, args1).Scan(&result.VerifyEmail.ID, &result.VerifyEmail.Username, &result.VerifyEmail.Email, &result.VerifyEmail.SecretCode,
+			&result.VerifyEmail.IsUsed, &result.VerifyEmail.CreatedAt, &result.VerifyEmail.ExpiredAt)
+		if err != nil {
+			return err
+		}
+
+		// update users table
+		query2 := `UPDATE users SET is_email_verified = COALESCE(@emailVerified, is_email_verified) WHERE username = @username RETURNING *`
+		args2 := pgx.NamedArgs{
+			"username":      result.VerifyEmail.Username,
+			"emailVerified": true,
+		}
+
+		err = tx.QueryRow(ctx, query2, args2).Scan(&result.User.UserName, &result.User.HashedPassword, &result.User.FullName,
+			&result.User.Email, &result.User.PasswordChangedAt, &result.User.CreatedAt, &result.User.IsEmailVerified)
+		return err
+	})
+
+	return result, err
+}
+
 func (r *repositoryImpl) CreateUserTx(ctx context.Context, arg models.CreateUserTxParams) (models.User, error) {
 	var result models.User
 
@@ -426,7 +478,7 @@ func (r *repositoryImpl) CreateUserTx(ctx context.Context, arg models.CreateUser
 		var err error
 
 		// create user
-		query := `INSERT INTO users (username, hashed_password, full_name, email) VALUES (@userName, @password, @fullName, @email) RETURNING username, hashed_password, full_name, email, password_changed_at, created_at`
+		query := `INSERT INTO users (username, hashed_password, full_name, email) VALUES (@userName, @password, @fullName, @email) RETURNING *`
 		args := pgx.NamedArgs{
 			"userName": arg.User.UserName,
 			"password": arg.User.HashedPassword,
@@ -434,7 +486,8 @@ func (r *repositoryImpl) CreateUserTx(ctx context.Context, arg models.CreateUser
 			"email":    arg.User.Email,
 		}
 
-		err = tx.QueryRow(ctx, query, args).Scan(&result.UserName, &result.HashedPassword, &result.FullName, &result.Email, &result.PasswordChangedAt, &result.CreatedAt)
+		err = tx.QueryRow(ctx, query, args).Scan(&result.UserName, &result.HashedPassword, &result.FullName, &result.Email,
+			 &result.PasswordChangedAt, &result.CreatedAt, &result.IsEmailVerified)
 		if err != nil {
 			return err
 		}
