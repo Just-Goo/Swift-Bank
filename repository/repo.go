@@ -19,6 +19,8 @@ type RepositoryProvider interface {
 	CreateEntry(ctx context.Context, entry models.Entry) (models.Entry, error)
 	GetEntry(ctx context.Context, id int64) (models.Entry, error)
 	ListEntries(ctx context.Context, accountID, limit, offset int64) ([]models.Entry, error)
+	CreateVerifyEmail(ctx context.Context, data models.VerifyEmails) (models.VerifyEmails, error)
+	VerifyEmailTx(ctx context.Context, arg models.VerifyEmailTxParams) (models.VerifyEmailTxResult, error)
 	CreateTransaction(ctx context.Context, transaction models.Transaction) (models.Transaction, error)
 	GetTransaction(ctx context.Context, id int64) (models.Transaction, error)
 	ListTransactions(ctx context.Context, fromAccountID, toAccountID, limit, offset int64) ([]models.Transaction, error)

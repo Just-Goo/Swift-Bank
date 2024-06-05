@@ -98,6 +98,14 @@ func (s *serviceImpl) CreateUserTx(ctx context.Context, data models.CreateUserTx
 	return s.repo.CreateUserTx(ctx, data)
 }
 
+func (s *serviceImpl) VerifyEmailTx(ctx context.Context, arg models.VerifyEmailTxParams) (models.VerifyEmailTxResult, error) {
+	return s.repo.VerifyEmailTx(ctx, arg)
+}
+
+func (s *serviceImpl) CreateVerifyEmail(ctx context.Context, data models.VerifyEmails) (models.VerifyEmails, error) {
+	return s.repo.CreateVerifyEmail(ctx, data)
+}
+
 func (s *serviceImpl) CreateUser(ctx context.Context, data models.CreateUserRequest) (models.User, error) {
 
 	arg := models.User{

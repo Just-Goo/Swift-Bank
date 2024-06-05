@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	SwiftBank_CreateUser_FullMethodName = "/pb.SwiftBank/CreateUser"
-	SwiftBank_LoginUser_FullMethodName  = "/pb.SwiftBank/LoginUser"
-	SwiftBank_UpdateUser_FullMethodName = "/pb.SwiftBank/UpdateUser"
+	SwiftBank_CreateUser_FullMethodName  = "/pb.SwiftBank/CreateUser"
+	SwiftBank_LoginUser_FullMethodName   = "/pb.SwiftBank/LoginUser"
+	SwiftBank_VerifyEmail_FullMethodName = "/pb.SwiftBank/VerifyEmail"
+	SwiftBank_UpdateUser_FullMethodName  = "/pb.SwiftBank/UpdateUser"
 )
 
 // SwiftBankClient is the client API for SwiftBank service.
@@ -30,6 +31,7 @@ const (
 type SwiftBankClient interface {
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
 	LoginUser(ctx context.Context, in *LoginUserRequest, opts ...grpc.CallOption) (*LoginUserResponse, error)
+	VerifyEmail(ctx context.Context, in *VerifyEmailRequest, opts ...grpc.CallOption) (*VerifyEmailResponse, error)
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
 }
 
@@ -59,6 +61,15 @@ func (c *swiftBankClient) LoginUser(ctx context.Context, in *LoginUserRequest, o
 	return out, nil
 }
 
+func (c *swiftBankClient) VerifyEmail(ctx context.Context, in *VerifyEmailRequest, opts ...grpc.CallOption) (*VerifyEmailResponse, error) {
+	out := new(VerifyEmailResponse)
+	err := c.cc.Invoke(ctx, SwiftBank_VerifyEmail_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *swiftBankClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error) {
 	out := new(UpdateUserResponse)
 	err := c.cc.Invoke(ctx, SwiftBank_UpdateUser_FullMethodName, in, out, opts...)
@@ -74,6 +85,7 @@ func (c *swiftBankClient) UpdateUser(ctx context.Context, in *UpdateUserRequest,
 type SwiftBankServer interface {
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
 	LoginUser(context.Context, *LoginUserRequest) (*LoginUserResponse, error)
+	VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error)
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
 	mustEmbedUnimplementedSwiftBankServer()
 }
@@ -87,6 +99,9 @@ func (UnimplementedSwiftBankServer) CreateUser(context.Context, *CreateUserReque
 }
 func (UnimplementedSwiftBankServer) LoginUser(context.Context, *LoginUserRequest) (*LoginUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LoginUser not implemented")
+}
+func (UnimplementedSwiftBankServer) VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VerifyEmail not implemented")
 }
 func (UnimplementedSwiftBankServer) UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
@@ -140,6 +155,24 @@ func _SwiftBank_LoginUser_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SwiftBank_VerifyEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyEmailRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SwiftBankServer).VerifyEmail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SwiftBank_VerifyEmail_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SwiftBankServer).VerifyEmail(ctx, req.(*VerifyEmailRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _SwiftBank_UpdateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateUserRequest)
 	if err := dec(in); err != nil {
@@ -172,6 +205,10 @@ var SwiftBank_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "LoginUser",
 			Handler:    _SwiftBank_LoginUser_Handler,
+		},
+		{
+			MethodName: "VerifyEmail",
+			Handler:    _SwiftBank_VerifyEmail_Handler,
 		},
 		{
 			MethodName: "UpdateUser",
