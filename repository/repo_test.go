@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/require"
 	"github.com/zde37/Swift_Bank/helpers"
 	"github.com/zde37/Swift_Bank/models"
@@ -286,7 +287,7 @@ func TestDeleteAccount(t *testing.T) {
 
 	account2, err := testRepo.R.GetAccount(context.Background(), account1.ID)
 	require.Error(t, err)
-	require.EqualError(t, err, "no rows in result set")
+	require.EqualError(t, err, pgx.ErrNoRows.Error())
 	require.Empty(t, account2)
 }
 

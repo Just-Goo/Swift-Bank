@@ -112,7 +112,7 @@ func (h *handlerImpl) CreateAccount(ctx *gin.Context) {
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			ctx.JSON(http.StatusBadRequest, h.errorResponse(err))
+			ctx.JSON(http.StatusForbidden, h.errorResponse(err))
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, h.errorResponse(err))
@@ -131,7 +131,7 @@ func (h *handlerImpl) GetAccount(ctx *gin.Context) {
 
 	account, err := h.service.GetAccount(ctx, req.ID)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			ctx.JSON(http.StatusNotFound, h.errorResponse(err))
 			return
 		}
@@ -182,7 +182,7 @@ func (h *handlerImpl) UpdateAccount(ctx *gin.Context) {
 
 	account, err := h.service.AddAccountBalance(ctx, req.ID, update.Balance)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			ctx.JSON(http.StatusNotFound, h.errorResponse(err))
 			return
 		}
@@ -202,7 +202,7 @@ func (h *handlerImpl) DeleteAccount(ctx *gin.Context) {
 
 	err := h.service.DeleteAccount(ctx, req.ID)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			ctx.JSON(http.StatusNotFound, h.errorResponse(err))
 			return
 		}
@@ -362,7 +362,7 @@ func (h *handlerImpl) GetUser(ctx *gin.Context) {
 
 	user, err := h.service.GetUser(ctx, req.UserName)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			ctx.JSON(http.StatusNotFound, h.errorResponse(err))
 			return
 		}
@@ -443,7 +443,7 @@ func (h *handlerImpl) TransferMoney(ctx *gin.Context) {
 func (h *handlerImpl) validAccount(ctx *gin.Context, accountID int64, currency string) (models.Account, bool) {
 	account, err := h.service.GetAccount(ctx, accountID)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			ctx.JSON(http.StatusNotFound, h.errorResponse(err))
 			return account, false
 		}

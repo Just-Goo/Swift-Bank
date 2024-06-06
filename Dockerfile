@@ -9,10 +9,7 @@ FROM alpine:3.19
 WORKDIR /app
 COPY --from=builder /app/main .
 COPY app.env .
-COPY start.sh .
-COPY wait-for.sh .
 COPY database/migrations ./database/migrations
 
 EXPOSE 8080
-CMD [ "/app/main" ]
-ENTRYPOINT [ "/app/start.sh" ]
+CMD [ "/app/main" ] 
