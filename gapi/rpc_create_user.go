@@ -50,7 +50,8 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			return nil, status.Errorf(codes.AlreadyExists, "a db error occurred: %s", err)
+
+			return nil, status.Errorf(codes.AlreadyExists, "%s: %s", getPgxErrorName(pgErr), err)
 
 		}
 		return nil, status.Errorf(codes.Internal, "failed to create user: %s", err)
@@ -59,6 +60,13 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 	return &pb.CreateUserResponse{
 		User: convertUser(createdUser),
 	}, nil
+}
+
+func getPgxErrorName(pgErr *pgconn.PgError) string {
+	if pgErr.ConstraintName == "users_email_key" {
+		return "email address already exists"
+	}
+	return "username already exists"
 }
 
 func validateCreateUserRequest(req *pb.CreateUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
